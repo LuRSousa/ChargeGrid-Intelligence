@@ -134,3 +134,9 @@ chargegrid-intelligence/
 - SCSS para estilização
 - Sem frameworks ou dependências externas
 - Compatível com qualquer navegador moderno
+
+---
+
+## Demonstração
+[Acesse o ChargeGrid Intelligence online](https://lursousa.github.io/ChargeGrid-Intelligence/)
+
