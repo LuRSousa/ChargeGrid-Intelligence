@@ -1,142 +1,224 @@
-# ChargeGrid Intelligence — GoodWe
-### Sistema Inteligente de Gerenciamento de Recarga de Veículos Elétricos
+# ChargeGrid Intelligence — Sistema de Gestão de Recarga de Veículos Elétricos
 
-> Sprint 2 — Prova de Conceito Funcional | FIAP 1CCPG | 2026
+> **FIAP + GoodWe · EV Challenge 2026**  
+> **Turma:** 1CCPG  
+> **Status:** Em desenvolvimento
 
 ---
 
-## Integrantes
+## 📋 Sumário
 
-| Nome | RM | Turma |
-|---|---|---|
-| Caio Henrique Ferraz da Silva | RM568992 | 1CCPG |
-| Enzo Caruso Peter | RM570908 | 1CCPG |
-| Leonardo Figueredo dos Santos | RM573653 | 1CCPG |
-| Leonardo Robert Maulicino | RM570329 | 1CCPG |
-| Lucas Ramos de Sousa | RM573901 | 1CCPG |
+- [Sobre o Projeto](#sobre-o-projeto)
+- [Arquitetura do Sistema](#arquitetura-do-sistema)
+- [Stack Tecnológica](#stack-tecnológica)
+- [Estrutura do Projeto](#estrutura-do-projeto)
+- [Como Executar (Backend)](#como-executar-backend)
+- [Como Executar (Frontend)](#como-executar-frontend)
+- [Divisão de Tarefas](#divisão-de-tarefas)
+- [Equipe](#equipe)
 
 ---
 
 ## Sobre o Projeto
 
-O **ChargeGrid Intelligence** é uma prova de conceito de um sistema de gerenciamento de recarga de veículos elétricos para ambientes comerciais, desenvolvido como evolução da pesquisa realizada na Sprint 1 do GoodWe Challenge.
+O **ChargeGrid Intelligence** é uma plataforma de gestão de recarga de veículos elétricos para **ambientes comerciais** (shoppings, condomínios, postos de combustível). O sistema gerencia múltiplos carregadores, controla a demanda de energia, cobra os usuários por sessão e otimiza o uso de energia solar disponível.
 
-O sistema simula em tempo real o funcionamento de uma estação de recarga comercial com múltiplos pontos, abordando os quatro pilares estratégicos definidos na Sprint 1:
+Este é o **entregável final do Challenge GoodWe/FIAP**, com prazo até outubro de 2026.
 
-- **Controle de Demanda** — Dynamic Load Balancing (DLB) distribui automaticamente a potência disponível entre os carregadores ativos
-- **Protocolos Abertos** — Simulação do protocolo OCPP com eventos reais (BootNotification, StartTransaction, StopTransaction, MeterValues)
-- **Tarifação e Pagamento** — Cálculo dinâmico de tarifa por sessão com ajustes por horário de pico, demanda total e número de sessões ativas
-- **Inteligência Artificial** — Módulo de decisão que analisa geração solar disponível e condições de demanda para otimizar o carregamento
+### Pilares do Sistema
 
----
-
-## Funcionalidades
-
-- Gerenciamento de até 5 sessões de recarga simultâneas
-- Rebalanceamento automático de potência ao iniciar ou encerrar uma sessão
-- Tarifação dinâmica: +15% em alta demanda, +20% em horário de pico (18h–21h)
-- Limite de 24 kW por carregador (40% da capacidade total de 60 kW)
-- Log OCPP em tempo real com classificação por tipo de evento
-- Decisão de IA por sessão baseada em geração solar e condições da rede
-- Desconto de 15% na tarifa quando geração solar ultrapassa 60% da capacidade
-- Relatório detalhado ao encerrar cada sessão (energia, tarifa, custo total, duração)
+| Pilar | Descrição |
+|:------|:----------|
+| **Controle de Demanda** | Dynamic Load Balancing (DLB) distribui automaticamente a potência disponível entre os carregadores ativos |
+| **Protocolos Abertos** | Comunicação via **Modbus TCP** com carregadores HCA G2 (GoodWe) |
+| **Tarifação e Pagamento** | Cobrança dinâmica por sessão com ajustes por horário de pico e demanda |
+| **Inteligência Artificial** | Previsão de picos de consumo, ajuste dinâmico de tarifa e otimização energética |
 
 ---
 
 ## Arquitetura do Sistema
 
-```
-index.html          → Estrutura da interface (slots, métricas, modais, log)
-     │
-     ├── script.js  → Lógica de negócio (independente de interface)
-     │      │
-     │      ├── class Sessao          (estrutura de dados)
-     │      ├── calcularPotenciaTotal()
-     │      ├── calcularTarifa()      (dinâmica com pico e demanda)
-     │      ├── rebalancearPotencias() (DLB)
-     │      ├── simularOcpp()         (protocolo aberto)
-     │      ├── iniciarSessao()
-     │      └── encerrarSessao()
-     │
-     └── app.js     → Interface (consome script.js, atualiza o DOM)
-            │
-            ├── renderizarSlots()     (estado visual dos carregadores)
-            ├── atualizarMetricas()   (potência, sessões, capacidade)
-            ├── confirmarSessao()     (fluxo do formulário modal)
-            ├── calcularSolar()       (simulação de geração fotovoltaica)
-            ├── decisaoIA()           (módulo de decisão inteligente)
-            └── adicionarLog()        (log OCPP em tempo real)
+### Camada de Apresentação
 
-style.scss → Estilos em SCSS compilados para style.css
-```
+| Interface 1 — Dashboard do Operador | Interface 2 — PWA Mobile |
+|:------------------------------------|:-------------------------|
+| Painel de monitoramento em tempo real | App do cliente e do atendente |
+| Gráficos de consumo e alertas de demanda | Leitura de RFID via Web NFC API |
+| Controle de rebalanceamento de potência | Resumo de sessão e pagamento |
+| HTML5 · CSS3 · JavaScript (Vanilla) | HTML5 · CSS3 · JS · Web NFC API |
 
-**Fluxo de uma sessão:**
+**Interface 2 e API em desenvolvimento**.
+
+### Fluxo de Dados Principal
+
 ```
-Usuário clica "+ Iniciar"
-    → Modal abre
-    → Preenche nome, tipo de carregador, horário
-    → confirmarSessao() valida e chama iniciarSessao()
-    → DLB redistribui potência entre todos os slots ativos
-    → IA analisa geração solar: se > 60%, aplica desconto de 15% na tarifa e registra no log OCPP
-    → Slot atualiza para estado "Carregando"
-    → Usuário clica "Encerrar"
-    → Relatório gerado com energia, tarifa e custo
+1. Hardware (HCA G2)   →  Comunica via Modbus TCP (registradores)
+2. Polling             →  Lê registradores a cada 30s e detecta eventos
+3. Banco de Dados      →  Persiste sessões, usuários, faturas e logs (MySQL)
+4. API (Node.js)       →  Expõe dados para os front-ends
+5. Dashboard           →  Exibe métricas e alertas para o operador
+6. PWA                 →  Permite que o cliente veja a sessão e pague via PIX
 ```
 
 ---
 
-## Como Executar
+## Stack Tecnológica
 
-Não requer instalação, servidor ou dependências externas.
-
-1. Clone ou baixe o repositório
-2. Abra o arquivo `index.html` diretamente no navegador
-3. O sistema inicializa automaticamente com o boot do protocolo OCPP
-
-```bash
-# Opcional — clonar via Git
-git clone https://github.com/seu-usuario/chargegrid-intelligence.git
-cd chargegrid-intelligence
-# Abrir index.html no navegador
-```
+| Componente | Tecnologia | Justificativa |
+|:-----------|:-----------|:--------------|
+| **Back-end** | Node.js + Express | Lógica já implementada em JS, facilidade com Modbus e integrações |
+| **Banco de Dados** | MySQL (via `mysql2/promise`) | Estrutura relacional para faturas, usuários e histórico |
+| **Front-end (Dashboard)** | HTML5, CSS3, JavaScript (Vanilla) | Já existente, adaptação rápida para consumir API |
+| **Front-end (PWA)** | HTML5, CSS3, JS + Web NFC API | Mobile-first, instalável, leitura de RFID sem app nativo |
+| **Pagamento** | Mercado Pago (SDK Node.js) | Sandbox gratuito, suporte a PIX e webhooks |
+| **Modbus** | `modbus-serial` (Node.js) | Biblioteca madura para TCP/RTU, fácil substituição de simulação |
+| **IA** | Módulo próprio em JavaScript | Previsão de pico por médias históricas; ajuste dinâmico de tarifa |
 
 ---
 
-## Estrutura de Arquivos
+## Estrutura Planejada do Projeto
 
 ```
 chargegrid-intelligence/
-├── index.html      # Página principal da aplicação
-├── script.js       # Lógica de negócio (DLB, tarifação, OCPP, sessões)
-├── app.js          # Interface e integração com o DOM
-├── style.scss      # Estilos em SCSS (fonte)
-├── style.css       # CSS compilado (gerado automaticamente)
+│
+├── backend/                        # Servidor Node.js
+│   ├── src/
+│   │   ├── logic.js                # Regras de negócio
+│   │   ├── routes/                 # Rotas da API
+│   │   │   ├── sessoes.js
+│   │   │   ├── metricas.js
+│   │   │   ├── pagamento.js
+│   │   │   └── webhook.js
+│   │   ├── models/                 # Models do banco
+│   │   │   ├── SessaoModel.js
+│   │   │   ├── UsuarioModel.js
+│   │   │   └── FaturaModel.js
+│   │   └── services/               # Serviços externos
+│   │       ├── modbusSimulator.js
+│   │       ├── modbusClient.js
+│   │       ├── polling.js
+│   │       └── ia.js
+│   ├── sql/
+│   │   └── schema.sql              # Script do banco
+|   ├── db.js                       # Conexão MySQL
+|   ├── server.js                   # Ponto de entrada
+│   ├── .env.example                # Exemplo de variáveis
+│   └── package.json
+│
+├── frontend/                       # Dashboard do operador (Interface 1)
+│   ├── index.html
+│   ├── app.js
+│   ├── script.js
+│   ├── style.css
+│   └── style.scss
+│
+├── pwa/                            # Aplicativo mobile (Interface 2)
+│   ├── index.html
+│   ├── manifest.json
+│   ├── sw.js
+│   ├── style.css
+│   └── app.js
+│
+├── docs/                           # Documentação
+│   ├── api.md
+│   ├── arquitetura.md
+│   └── base.md
+│
+├── .gitignore
 └── README.md
 ```
 
 ---
 
-## Evolução em relação à Sprint 1
+## Como Executar (Backend)
 
-| Sprint 1 | Sprint 2 |
-|---|---|
-| Análise teórica dos 4 pilares | Implementação funcional dos 4 pilares |
-| Problemas identificados | Soluções implementadas em código |
-| Propostas de DLB e tarifação | DLB e tarifação funcionando em tempo real |
-| IA descrita como conceito | IA funcional: desconto solar aplicado automaticamente na tarifa |
-| Documentação em PDF | Prova de conceito interativa no navegador |
+### Pré-requisitos
+
+- [Node.js](https://nodejs.org/) (versão LTS)
+- [MySQL Community Server](https://dev.mysql.com/downloads/mysql/) com Workbench
+
+### Passos
+
+**1. Clone o repositório**
+
+```bash
+git clone https://github.com/LuRSousa/ChargeGridIntelligence-Sprint2.git
+cd ChargeGridIntelligence-Sprint2/backend
+```
+
+**2. Instale as dependências**
+
+```bash
+npm install
+```
+
+**3. Crie o banco de dados**
+
+- Abra o MySQL Workbench
+- Execute: `CREATE DATABASE chargegrid;`
+- Depois rode o script `sql/schema.sql`
+
+**4. Configure as variáveis de ambiente**
+
+Copie `.env.example` para `.env` e preencha com suas credenciais:
+
+```env
+PORT=3000
+DB_HOST=localhost
+DB_USER=root
+DB_PASS=SUA_SENHA
+DB_NAME=chargegrid
+```
+
+**5. Inicie o servidor**
+
+```bash
+# Modo desenvolvimento (com auto-reload)
+npx nodemon server.js
+
+# Ou modo normal
+node server.js
+```
+
+**6. Teste a conexão**
+
+Acesse no navegador: `http://localhost:3000/health`
+
+Deve retornar: `{"status":"ok","db":"connected"}`
 
 ---
 
-## Tecnologias
+## Como Executar (Frontend)
 
-- HTML5 / CSS3 / JavaScript (ES6+)
-- SCSS para estilização
-- Sem frameworks ou dependências externas
-- Compatível com qualquer navegador moderno
+### Interface 1 — Dashboard do Operador
+
+1. Navegue até a pasta `frontend/`
+2. Abra o arquivo `index.html` no navegador
+3. Simule os carregadores digitando dados manualmente (automação em desenvolvimento)
 
 ---
 
-## Demonstração
-[Acesse o ChargeGrid Intelligence online](https://lursousa.github.io/ChargeGrid-Intelligence/)
+## Divisão de Tarefas
 
+| Membro | Papel | Responsabilidade |
+|:-------|:------|:-----------------|
+| M1 | Backend Foundation | Servidor Node.js + Express + MySQL |
+| M2 | Banco + Lógica de Negócio | Schema, models e regras de negócio |
+| M3 | API REST | Rotas da API e testes |
+| M4 | Interface 1 (Dashboard) | Adaptar frontend para consumir API |
+| M5 | Interface 2 (PWA) | Estrutura do PWA, NFC e pagamento |
+| M6 | Modbus + Polling | Simulador, polling loop e integração |
+| M7 | Pagamento + IA | Mercado Pago e módulo de IA |
+
+---
+
+## Equipe
+
+| Nome | RM |
+|:-----|:---|
+| Caio Henrique Ferraz da Silva | RM568992 |
+| Enzo Caruso Peter | RM570908 |
+| Leonardo Figueredo dos Santos | RM573653 |
+| Leonardo Robert Maulicino | RM570329 |
+| Matheus Pimenta Martini | RM569400 |
+| Pablo Renato dos Santos Sobral de Carvalho | RM569894 |
