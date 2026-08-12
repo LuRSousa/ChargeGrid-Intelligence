@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>GoodWe - Sistema Inteligente de Gerenciamento de Recarga</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+
+    <body>
+        <header>
+            <div id="logo">GoodWe ChargeGrid Intelligence</div>
+            <div id="status-sistema">● Sistema Online</div>
+        </header>
+
+        <main>
+            <section id="chargers">
+                <div id="chargers-grid">        
+                    <div id="slot-1" class="charger-card inativo"></div>
+                    <div id="slot-2" class="charger-card inativo"></div>
+                    <div id="slot-3" class="charger-card inativo"></div>
+                    <div id="slot-4" class="charger-card inativo"></div>
+                    <div id="slot-5" class="charger-card inativo"></div>
+                </div>
+            </section>
+
+
+            <section id="dashboard">
+                <div id="metricas">
+                    <div id="val-solar"></div>
+                    <div id="val-potencia"></div>
+                    <div id="val-sessoes"></div>
+                    <div id="val-percentual"></div>
+                </div>
+
+                <div id="ocpp-log"></div>
+            </section>
+
+            <div id="modal-nova-sessao">
+                <div id="modal-conteudo">
+                    <h2>Nova Sessão</h2>
+                    <form id="form-nova-sessao" onsubmit="return false;">
+                        <div class="form-input">
+                            <label for="nome_usuario">Nome:</label>
+                            <input type="text" name="nome_usuario" id="input-nome" placeholder="Nome">
+                        </div>
+
+                        <div class="form-input">
+                            <label for="tipo_carregador">Tipo de carregador:</label>
+                            <select name="tipo_carregador" id="input-tipo">
+                                <option value="1">Comum</option>
+                                <option value="2">Rápido</option>
+                            </select>
+                        </div>
+                        
+                        <div id="horarios">
+                            <div class="form-input">
+                                <label for="inicio_sessao">Início</label>
+                                <input type="number" name="inicio_sessao" id="input-inicio" placeholder="HHMM (exp: 1234)">
+                            </div>
+
+                            <div class="form-input">
+                                <label for="fim_sessao">Fim</label>
+                                <input type="number" name="fim_sessao" id="input-fim" placeholder="HHMM (exp: 2056)">
+                            </div>
+                        </div>
+
+                        <div id="modal-erro"></div>
+                        
+                        <div id="form-botoes">
+                            <button type="button" onclick="confirmarSessao()" id="btn-iniciar">Iniciar Sessão</button>
+                            <button type="button" onclick="fecharModal()" id="btn-cancelar">Cancelar</button>
+                        </div>            
+                    </form>
+                </div>
+            </div>
+
+            <div id="modal-relatorio">
+                <div id="modal-relatorio-conteudo"></div>
+            </div>
+        </main>
+        
+        <script src="script.js"></script>
+        <script src="app.js"></script>
+    </body>
+</html>
