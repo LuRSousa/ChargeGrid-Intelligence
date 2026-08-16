@@ -22,7 +22,7 @@ CREATE TABLE Carregadores (
     localizacao VARCHAR(255) NOT NULL,  
     potencia_maxima DECIMAL (10,2) DEFAULT NULL,
     endereco_ip VARCHAR(50) DEFAULT NULL,
-    porta_modbus VARCHAR DEFAULT NULL (10),
+    porta_modbus VARCHAR (15) DEFAULT NULL (10),
     status_modbus VARCHAR(25) CHECK (status_modbus IN ("ocioso", "aguardando_inicio_sessao", "em_uso", "pagamento_pendente", "erro")),
     potencia_atual DECIMAL (10,2),
     instalado_em DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -39,7 +39,7 @@ CREATE TABLE Sessoes (
     potencia_media DECIMAL (10, 2),
     energia_kwh DECIMAL (10, 3),
     tarifa_aplicada DECIMAL (10, 4),
-    custo_total DECIMAL (10,2) NOT NULL,
+    custo_total DECIMAL (10,2) DEFAULT NULL,
     sessao_status VARCHAR (30) CHECK(sessao_status IN ("carregando", "encerrada", "cancelada", "pagamento_pendente")),
     modo_carga VARCHAR (30) CHECK (modo_carga IN ("rapido", "FV", "FV_baterias")),
     criada_em DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -59,8 +59,8 @@ CREATE TABLE Faturas (
     status_pagamento VARCHAR (30),
     metodo_pagamento VARCHAR (30),
     transacao_externa_id VARCHAR (120),
-    data_emissao DATETIME,
-    data_pagamento DATETIME,
+    data_emissao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    data_pagamento DATETIME DEFAULT NULL,
 
     FOREIGN KEY (sessao_id) REFERENCES Sessoes (id),
     FOREIGN KEY (usuario_id) REFERENCES Usuarios(id)
