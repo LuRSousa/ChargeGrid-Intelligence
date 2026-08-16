@@ -6,13 +6,13 @@ CREATE TABLE Usuarios (
     tipo_conta VARCHAR(30) CHECK (tipo_conta IN ("cliente", "operador")),
     plano VARCHAR(15) CHECK (plano IN ("padrao", "vip")),
     desconto_percentual DECIMAL (5,2)
-    criado_em DATETIME NOT NULL
+    criado_em DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE Cartoes_rfid (
     cartao_rfid_uid VARCHAR(100) PRIMARY KEY,
     status_cartao_rfid VARCHAR(9) CHECK (status_cartao_rfid IN ("em_uso", "estoque", "bloqueado")),
-    criado_em DATETIME NOT NULL
+    criado_em DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE Carregadores (
@@ -20,12 +20,12 @@ CREATE TABLE Carregadores (
     numero_serie VARCHAR (100) NOT NULL,
     modelo VARCHAR (100) NOT NULL,
     localizacao VARCHAR(255) NOT NULL,  
-    potencia_maxima DECIMAL (10,2),
-    endereco_ip VARCHAR(50),
-    porta_modbus VARCHAR (10),
+    potencia_maxima DECIMAL (10,2) DEFAULT NULL,
+    endereco_ip VARCHAR(50) DEFAULT NULL,
+    porta_modbus VARCHAR DEFAULT NULL (10),
     status_modbus VARCHAR(25) CHECK (status_modbus IN ("ocioso", "aguardando_inicio_sessao", "em_uso", "pagamento_pendente", "erro")),
     potencia_atual DECIMAL (10,2),
-    instalado_em DATETIME NOT NULL
+    instalado_em DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE Sessoes (
@@ -40,10 +40,10 @@ CREATE TABLE Sessoes (
     energia_kwh DECIMAL (10, 3),
     tarifa_aplicada DECIMAL (10, 4),
     custo_total DECIMAL (10,2) NOT NULL,
-    sessao_status VARCHAR (30) NOT NULL,
+    sessao_status VARCHAR (30) CHECK(sessao_status IN ("carregando", "encerrada", "cancelada", "pagamento_pendente")),
     modo_carga VARCHAR (30) CHECK (modo_carga IN ("rapido", "FV", "FV_baterias")),
-    criada_em DATETIME NOT NULL,
-    atualizada_em DATETIME,
+    criada_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+    atualizada_em DATETIME DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (carregador_id) REFERENCES Carregadores(id), 
     FOREIGN KEY (cartao_rfid_uid) REFERENCES Cartoes_rfid (cartao_rfid_uid),
@@ -74,7 +74,7 @@ CREATE TABLE Logs_Modbus (
     valor_convertido VARCHAR (100),
     sucesso BOOLEAN,
     erro VARCHAR (300),
-    gerado_em DATETIME NOT NULL,
+    gerado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (carregador_id) REFERENCES Carregadores (id)
 );
