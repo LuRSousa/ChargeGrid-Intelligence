@@ -1,5 +1,0 @@
-1. sessoes.tarifa_aplicada precis ter precisao (10, 4)?
-2. Banco calcula potência média?
-3. sessoes.criada_em é necessário?
-4. Deletei restrição NOT NULL de sessoes.fim_recarga
-5. A definir usuarios.desconto_percentual de acrodo com plano
