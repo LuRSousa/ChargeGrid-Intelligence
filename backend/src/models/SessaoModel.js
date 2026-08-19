@@ -1,4 +1,5 @@
 const db = require('../db');
+const { calcularPotenciaMedia } = require('../logic');
 
 class SessaoModel{
     //Cria uma nova sessão de recarga com dados {carregador_id, cartao_rfid_uid, usuario_id, modo_carga, potencia_atual}
@@ -9,11 +10,29 @@ class SessaoModel{
         const [result] = await db.query(
             `INSERT INTO Sessoes 
              (carregador_id, cartao_rfid_uid, usuario_id, inicio_recarga, sessao_status, modo_carga, potencia_media) 
-             VALUES (?, ?, ?, NOW(), 'carregando', ?, ?)`,
-            [carregador_id, cartao_rfid_uid, usuario_id || null, modo_carga || 'FV', potencia_atual || 0]
+             VALUES (?, ?, ?, NOW(), 'iniciada', ?, ?)`,
+            [carregador_id, cartao_rfid_uid, usuario_id || null, modo_carga || 'rapido', potencia_atual || 0]
         );
 
         return this.buscarPorId(result.insertId);
+    }
+
+    //Transiciona a sessão de 'iniciada' para 'carregando'
+    //Retorna {Object} Sessão atualizada, ou null se a transição não for válida
+    static async iniciarCarregamento(id, limites = {}) {
+        const { limite_valor = null } = limites;
+
+        const [result] = await db.query(
+            `UPDATE Sessoes 
+            SET sessao_status = 'carregando', 
+                limite_valor = ?,
+                atualizada_em = NOW() 
+            WHERE id = ? AND sessao_status = 'iniciada'`,
+            [limite_valor, id]
+        );
+
+        if (result.affectedRows === 0) return null;
+        return this.buscarPorId(id);
     }
 
     //Busca uma sessão pelo ID
@@ -47,7 +66,7 @@ class SessaoModel{
              LEFT JOIN Carregadores c ON s.carregador_id = c.id
              LEFT JOIN Usuarios u ON s.usuario_id = u.id
              WHERE s.cartao_rfid_uid = ? 
-               AND s.sessao_status = 'carregando'
+               AND s.sessao_status IN ('iniciada', 'carregando')
              ORDER BY s.inicio_recarga DESC
              LIMIT 1`,
             [rfidUid]
@@ -70,53 +89,55 @@ class SessaoModel{
         return rows;
     }
 
-    //Calcula a demanda total e quantidade de sessões ativas
-    //Retorna {Object} { demanda_total, qnt_sessoes }
-    static async getDemandaTotal() {
-        const [rows] = await db.query(
-            `SELECT 
-                SUM(c.potencia_atual) AS demanda_total,
-                COUNT(*) AS qnt_sessoes
-             FROM Sessoes s
-             JOIN Carregadores c ON s.carregador_id = c.id
-             WHERE s.sessao_status = 'carregando'`
-        );
-        return {
-            demanda_total: parseFloat(rows[0]?.demanda_total) || 0,
-            qnt_sessoes: parseInt(rows[0]?.qnt_sessoes) || 0
-        };
-    }
-
     //Atualiza a potência de uma sessão em andamento
     //Retorna {Object} Sessão atualizada
     static async atualizarPotencia(id, novaPotencia) {
-        await db.query(
-            `UPDATE Sessoes 
-             SET potencia_media = ?, atualizada_em = NOW()
-             WHERE id = ? AND sessao_status = 'carregando'`,
-            [novaPotencia, id]
-        );
-        return this.buscarPorId(id);
-    }
+    const [rows] = await db.query(
+        `SELECT potencia_media, atualizada_em, inicio_recarga 
+         FROM Sessoes 
+         WHERE id = ? AND sessao_status = 'carregando'`,
+        [id]
+    );
+
+    const sessao = rows[0];
+    if (!sessao) return null;
+
+    const novaMedia = calcularPotenciaMedia(
+        sessao.potencia_media,
+        sessao.inicio_recarga,
+        sessao.atualizada_em,
+        novaPotencia
+    );
+
+    await db.query(
+        `UPDATE Sessoes 
+         SET potencia_media = ?, atualizada_em = NOW() 
+         WHERE id = ? AND sessao_status = 'carregando'`,
+        [novaMedia, id]
+    );
+
+    return this.buscarPorId(id);
+}
 
     //Encerra uma sessão (calcula tudo)
-    //Retorna {Object} Sessão encerrad
+    //Retorna {Object} Sessão encerrada, ou null se a sessão não estava ativa
     static async encerrar(id, dadosFinais) {
         const { duracao_minutos, energia_kwh, tarifa_aplicada, custo_total } = dadosFinais;
 
-        await db.query(
+        const [result] = await db.query(
             `UPDATE Sessoes 
-             SET fim_recarga = NOW(),
-                 duracao_minutos = ?,
-                 energia_kwh = ?,
-                 tarifa_aplicada = ?,
-                 custo_total = ?,
-                 sessao_status = 'encerrada',
-                 atualizada_em = NOW()
-             WHERE id = ?`,
+            SET fim_recarga = NOW(),
+                duracao_minutos = ?,
+                energia_kwh = ?,
+                tarifa_aplicada = ?,
+                custo_total = ?,
+                sessao_status = 'encerrada',
+                atualizada_em = NOW()
+            WHERE id = ? AND sessao_status IN ('iniciada', 'carregando')`,
             [duracao_minutos, energia_kwh, tarifa_aplicada, custo_total, id]
         );
 
+        if (result.affectedRows === 0) return null;
         return this.buscarPorId(id);
     }
 
