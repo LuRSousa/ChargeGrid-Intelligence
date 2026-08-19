@@ -92,32 +92,32 @@ class SessaoModel{
     //Atualiza a potência de uma sessão em andamento
     //Retorna {Object} Sessão atualizada
     static async atualizarPotencia(id, novaPotencia) {
-    const [rows] = await db.query(
-        `SELECT potencia_media, atualizada_em, inicio_recarga 
-         FROM Sessoes 
-         WHERE id = ? AND sessao_status = 'carregando'`,
-        [id]
-    );
+        const [rows] = await db.query(
+            `SELECT potencia_media, atualizada_em, inicio_recarga 
+            FROM Sessoes 
+            WHERE id = ? AND sessao_status = 'carregando'`,
+            [id]
+        );
 
-    const sessao = rows[0];
-    if (!sessao) return null;
+        const sessao = rows[0];
+        if (!sessao) return null;
 
-    const novaMedia = calcularPotenciaMedia(
-        sessao.potencia_media,
-        sessao.inicio_recarga,
-        sessao.atualizada_em,
-        novaPotencia
-    );
+        const novaMedia = calcularPotenciaMedia(
+            sessao.potencia_media,
+            sessao.inicio_recarga,
+            sessao.atualizada_em,
+            novaPotencia
+        );
 
-    await db.query(
-        `UPDATE Sessoes 
-         SET potencia_media = ?, atualizada_em = NOW() 
-         WHERE id = ? AND sessao_status = 'carregando'`,
-        [novaMedia, id]
-    );
+        await db.query(
+            `UPDATE Sessoes 
+            SET potencia_media = ?, atualizada_em = NOW() 
+            WHERE id = ? AND sessao_status = 'carregando'`,
+            [novaMedia, id]
+        );
 
-    return this.buscarPorId(id);
-}
+        return this.buscarPorId(id);
+    }
 
     //Encerra uma sessão (calcula tudo)
     //Retorna {Object} Sessão encerrada, ou null se a sessão não estava ativa
