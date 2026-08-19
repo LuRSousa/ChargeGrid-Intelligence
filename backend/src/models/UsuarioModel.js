@@ -1,5 +1,5 @@
 const db = require('../db');
-const bcrypt = require('bcrypt'); // Para hash de senha
+const bcryptjs = require('bcryptjs'); // Para hash de senha
 
 class UsuarioModel{
     //Busca um usuário pelo ID
@@ -126,8 +126,8 @@ class UsuarioModel{
             return null;
         }
 
-        // Comparação de senha (bcrypt)
-        const senhaCorreta = await bcrypt.compare(senha, usuario.senha_hash);
+        // Comparação de senha (bcryptjs)
+        const senhaCorreta = await bcryptjs.compare(senha, usuario.senha_hash);
         if (!senhaCorreta) {
             return null;
         }
