@@ -27,7 +27,7 @@ function calcularTarifa(modo, horaInicio, demandaTotal, qntSessoes, solarPercent
     }
 
     //Desconto solar de 15% quando solar > 60%
-    if (modo !== 'rápido' && solarPercentual > 60) {
+    if (modo !== 'rapido' && solarPercentual > 60) {
         tarifa *= 0.85; 
     }
 
@@ -39,12 +39,13 @@ function calcularTarifa(modo, horaInicio, demandaTotal, qntSessoes, solarPercent
     return Math.round(tarifa * 100) / 100;
 }
 
-//Gera sugestões de rebalanceamento de potência (DLB)
+//Distribui a potência disponível entre as sessões ativas de forma justa,
+//redistribuindo automaticamente a sobra de carregadores com limite menor
+//para os que ainda podem receber mais
 //Retorna {Object} Sugestões de ajuste
-function rebalancearPotencias(sessoesAtivas, demandaTotal, limiteContratado, potenciaMaxPorSessao = null) {
+function rebalancearPotencias(sessoesAtivas, demandaTotal, limiteContratado) {
     const qnt = sessoesAtivas.length;
 
-    //Se não há sessões ativas ou não há limite definido
     if (qnt === 0 || !limiteContratado || limiteContratado <= 0) {
         return {
             ajustes: [],
@@ -57,54 +58,78 @@ function rebalancearPotencias(sessoesAtivas, demandaTotal, limiteContratado, pot
         };
     }
 
-    //Calcula a potência ideal por sessão (distribuição igualitária)
-    let potenciaIdeal = limiteContratado / qnt;
+    // Cada sessão começa "pendente" — ainda não teve sua potência final decidida
+    const pendentes = sessoesAtivas.map(s => ({
+        id: s.id,
+        carregador_id: s.carregador_id,
+        potencia_antiga: s.potencia_media || 0,
+        potencia_maxima: s.potencia_maxima || 22,
+        atendida: false,
+        potencia_final: 0
+    }));
 
-    //Se houver um limite máximo por sessão, aplica
-    if (potenciaMaxPorSessao && potenciaIdeal > potenciaMaxPorSessao) {
-        potenciaIdeal = potenciaMaxPorSessao;
+    let orcamentoRestante = limiteContratado;
+    let houveMudanca = true;
+
+    while (houveMudanca) {
+        houveMudanca = false;
+        const ativas = pendentes.filter(s => !s.atendida);
+        if (ativas.length === 0) break;
+
+        const fatiaIgual = orcamentoRestante / ativas.length;
+
+        for (const s of ativas) {
+            if (s.potencia_maxima <= fatiaIgual) {
+                s.potencia_final = s.potencia_maxima;
+                s.atendida = true;
+                orcamentoRestante -= s.potencia_maxima;
+                houveMudanca = true;
+            }
+        }
     }
 
-    //Identifica quais sessões precisam de ajuste
+    const restantes = pendentes.filter(s => !s.atendida);
+    if (restantes.length > 0) {
+        const fatiaFinal = orcamentoRestante / restantes.length;
+        for (const s of restantes) {
+            s.potencia_final = Math.max(0, fatiaFinal);
+        }
+    }
+
     const ajustes = [];
     let demandaAposAjuste = 0;
 
-    for (const sessao of sessoesAtivas) {
-        const potenciaAntiga = sessao.potencia_atual || 0;
-        
-        //Respeita o limite individual do carregador
-        const potenciaMaxCarregador = sessao.potencia_maxima_carregador || 22;
-        const potenciaNova = Math.min(potenciaIdeal, potenciaMaxCarregador);
+    for (const s of pendentes) {
+        const potenciaNova = Math.round(s.potencia_final * 100) / 100;
+        demandaAposAjuste += potenciaNova;
 
-        //Se a diferença for maior que 0.1 kW, registra o ajuste
-        if (Math.abs(potenciaAntiga - potenciaNova) > 0.1) {
+        if (Math.abs(s.potencia_antiga - potenciaNova) > 0.1) {
             ajustes.push({
-                sessao_id: sessao.id,
-                carregador_id: sessao.carregador_id,
-                potencia_antiga: Math.round(potenciaAntiga * 100) / 100,
-                potencia_nova: Math.round(potenciaNova * 100) / 100,
-                motivo: potenciaNova < potenciaAntiga 
-                    ? 'Redução por demanda' 
+                sessao_id: s.id,
+                carregador_id: s.carregador_id,
+                potencia_antiga: Math.round(s.potencia_antiga * 100) / 100,
+                potencia_nova: potenciaNova,
+                motivo: potenciaNova < s.potencia_antiga
+                    ? 'Redução por demanda'
                     : 'Aumento por disponibilidade'
             });
         }
-        demandaAposAjuste += potenciaNova;
     }
 
-    const percentualUso = limiteContratado > 0 
-        ? Math.round((demandaTotal / limiteContratado) * 100) 
+    const percentualUso = limiteContratado > 0
+        ? Math.round((demandaTotal / limiteContratado) * 100)
         : 0;
 
     return {
         ajustes,
-        mensagem: ajustes.length > 0 
+        mensagem: ajustes.length > 0
             ? `${ajustes.length} ajuste(s) sugerido(s)`
             : 'Nenhum ajuste necessário',
         demanda_atual: Math.round(demandaTotal * 100) / 100,
         demanda_apos_ajuste: Math.round(demandaAposAjuste * 100) / 100,
         percentual_uso: percentualUso,
         limite_contratado: limiteContratado,
-        potencia_ideal_por_sessao: Math.round(potenciaIdeal * 100) / 100
+        potencia_ideal_por_sessao: Math.round((limiteContratado / qnt) * 100) / 100
     };
 }
 
@@ -141,6 +166,42 @@ function calcularSolar(data = new Date()) {
     return Math.max(0, Math.round(fator * maximo));
 }
 
+//Calcula a potência média considerando leituras anteriores e o tempo decorrido
+//Retorna {number} Potência média em kW
+function calcularPotenciaMedia(mediaAtual, inicioRecarga, ultimaAtualizacao, potenciaNova, agora = new Date()) {
+    const media = mediaAtual !== null ? Number(mediaAtual) : null;
+    const nova = Number(potenciaNova);
+
+    const inicio = new Date(inicioRecarga);
+    const ultimaLeitura = new Date(ultimaAtualizacao || inicioRecarga);
+
+    const tempoAnterior = (ultimaLeitura - inicio) / 1000;
+    const tempoNovo = (agora - ultimaLeitura) / 1000;
+
+    if (media === null || tempoAnterior <= 0) {
+        return nova; // agora garantidamente um number
+    }
+
+    const tempoTotal = tempoAnterior + tempoNovo;
+    return ((media * tempoAnterior) + (nova * tempoNovo)) / tempoTotal;
+}
+
+//Verifica se a sessão atingiu o limite definido pelo usuário
+//Retorna {Object} { atingido: boolean, tipo: string|null }
+function verificarLimiteAtingido(custoAtual, limiteValor) {
+    if (limiteValor && custoAtual >= limiteValor) {
+        return { atingido: true, tipo: 'valor' };
+    }
+
+    return { atingido: false, tipo: null };
+}
+
+//Calcula o limite de demanda seguro do posto, com margem de segurança sobre a capacidade total instalada (evita operar no limite físico exato)
+//Retorna {number} Limite contratado em kW
+function calcularLimiteContratado(potenciaTotalMaxima, margemSeguranca = 0.8) {
+    return Math.round(potenciaTotalMaxima * margemSeguranca * 100) / 100;
+}
+
 //Exportação de módulos
 module.exports = {
     calcularEnergia,
@@ -149,5 +210,8 @@ module.exports = {
     calcularDuracaoMinutos,
     calcularDuracaoHoras,
     isHorarioPico,
-    calcularSolar
+    calcularSolar,
+    calcularPotenciaMedia,
+    verificarLimiteAtingido,
+    calcularLimiteContratado
 };
