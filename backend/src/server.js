@@ -3,8 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const db = require('./db');
 
-const sessoesRoutes = require('./service/sessoes');
-const metricasRoutes = require('./service/metricas');
+const sessoesRoutes = require('./routes/sessoes');
+const carregadoresRoutes = require('./routes/carregadores');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/sessoes', sessoesRoutes);
-app.use('/api/metricas', metricasRoutes);
+app.use('/api/carregadores', carregadoresRoutes);
 
 app.get('/health', async (req, res) => {
     try {
