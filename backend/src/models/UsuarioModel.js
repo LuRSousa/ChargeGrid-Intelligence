@@ -4,6 +4,7 @@ const bcryptjs = require('bcryptjs'); // Para hash de senha
 class UsuarioModel{
     //Busca um usuário pelo ID
     //Retorna {Object} Usuário ou null
+    //feito
     static async buscarPorId(id) {
         const [rows] = await db.query(
             `SELECT id, nome, email, tipo_conta, plano, desconto_percentual, criado_em 

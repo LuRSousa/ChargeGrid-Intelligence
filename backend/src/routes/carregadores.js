@@ -1,7 +1,7 @@
+console.log("ROTA DE CARREGADORES FOI CARREGADA");
+
 const express = require("express");
 const CarregadorModel = require("../models/CarregadorModel");
-
-console.log("ROTA DE CARREGADORES FOI CARREGADA");
 
 const router = express.Router();
 

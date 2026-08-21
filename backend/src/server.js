@@ -5,8 +5,9 @@ const db = require('./db');
 
 const sessoesRoutes = require('./routes/sessoes');
 const carregadoresRoutes = require('./routes/carregadores');
-const pagamentoRoutes = require('./service/pagamento');
-const rfidsRoutes = require('./service/rfids');
+const pagamentoRoutes = require('./routes/pagamento');
+const rfidsRoutes = require('./routes/rfids');
+const usuarioRoutes = require('./routes/usuario');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,8 +17,9 @@ app.use(express.json());
 
 app.use('/api/sessoes', sessoesRoutes);
 app.use('/api/carregadores', carregadoresRoutes);
-app.use('/pagamento', pagamentoRoutes);
-app.use('/rfids', rfidsRoutes);
+app.use('/api/pagamento', pagamentoRoutes);
+app.use('/api/rfids', rfidsRoutes);
+app.use('/api/usuario', usuarioRoutes);
 
 app.get('/health', async (req, res) => {
     try {
