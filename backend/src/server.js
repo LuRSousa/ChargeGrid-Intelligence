@@ -5,6 +5,7 @@ const db = require('./db');
 
 const sessoesRoutes = require('./routes/sessoes');
 const carregadoresRoutes = require('./routes/carregadores');
+const pagamentoRoutes = require('./service/pagamento');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,6 +15,7 @@ app.use(express.json());
 
 app.use('/api/sessoes', sessoesRoutes);
 app.use('/api/carregadores', carregadoresRoutes);
+app.use('/pagamento', pagamentoRoutes);
 
 app.get('/health', async (req, res) => {
     try {

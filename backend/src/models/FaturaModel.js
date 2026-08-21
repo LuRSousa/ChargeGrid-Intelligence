@@ -3,6 +3,7 @@ const db = require('../db');
 class FaturaModel{
     //Cria uma nova fatura para uma sessão encerrada
     //Retorna {Object} Fatura criada
+    //feito
     static async criar(dados) {
         const { sessao_id, usuario_id, valor_total, desconto_aplicado } = dados;
 
@@ -24,6 +25,7 @@ class FaturaModel{
 
     //Busca uma fatura pelo ID
     //Retorna {Object} Fatura ou null
+    //feito
     static async buscarPorId(id) {
         const [rows] = await db.query(
             `SELECT f.*, 
@@ -45,6 +47,7 @@ class FaturaModel{
 
     //Busca uma fatura pelo ID da sessão
     //Retorna {Object} Fatura ou null
+    //feito
     static async buscarPorSessao(sessaoId) {
         const [rows] = await db.query(
             `SELECT * FROM Faturas WHERE sessao_id = ?`,
@@ -55,6 +58,7 @@ class FaturaModel{
 
     //Busca faturas de um usuário
     //Retorna {Array} Lista de faturas
+    //feito
     static async buscarPorUsuario(usuarioId, status = null) {
         let query = `SELECT * FROM Faturas WHERE usuario_id = ?`;
         const params = [usuarioId];
@@ -69,6 +73,7 @@ class FaturaModel{
 
     //Busca faturas pendentes
     //Retorna {Array} Lista de faturas pendentes
+    //FEITO
     static async buscarPendentes() {
         const [rows] = await db.query(
             `SELECT f.*, 
@@ -86,6 +91,7 @@ class FaturaModel{
 
     //Busca faturas pagas
     //Retorna {Array} Lista de faturas pagas
+    //feito
     static async buscarPagas(limit = 100) {
         const [rows] = await db.query(
             `SELECT f.*, 
@@ -105,6 +111,7 @@ class FaturaModel{
 
     //Busca todas as faturas
     //Retorna {Array} Lista de faturas
+    //feito
     static async buscarTodas(limit = 100, offset = 0) {
         const [rows] = await db.query(
             `SELECT f.*, 
@@ -122,6 +129,7 @@ class FaturaModel{
 
     //Marca fatura como paga
     //Retorna {Object} Fatura atualizada
+    //FEITO
     static async marcarPaga(id, metodoPagamento, transacaoExternaId = null) {
         // Busca a fatura para verificar se existe
         const fatura = await this.buscarPorId(id);
