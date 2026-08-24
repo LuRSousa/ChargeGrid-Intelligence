@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoodWe - Login</title>
+
+<style>
+  * {
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background: #d92b2b;
+  }
+
+  .splash {
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    background: linear-gradient(180deg, #db3931 20%, #f71612 70%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .goodwe {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    filter: brightness(0) invert(1);
+    
+    animation: fadeOutLogo 1.2s ease-in-out 0.8s forwards;
+  }
+
+  .goodwe img {
+    width: 200%;
+    max-width: 320px;
+  }
+
+  .login-card {
+    position: absolute;
+    background: #ffffff;
+    padding: 2.5rem 2rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+    width: 90%;
+    max-width: 380px;
+    opacity: 0;
+    pointer-events: none;
+
+    animation: fadeInLogin 0.8s ease-out 1.8s forwards;
+  }
+
+  .login-card h2 {
+    margin: 0 0 1.5rem 0;
+    color: #222222;
+    text-align: center;
+    font-size: 1.5rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.2rem;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 0.4rem;
+    color: #444444;
+    font-size: 0.9rem;
+    font-weight: bold;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus {
+    border-color: #db3931;
+  }
+
+  .btn-submit {
+    width: 100%;
+    padding: 0.8rem;
+    background-color: #db3931;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 0.5rem;
+  }
+
+  .btn-submit:hover {
+    background-color: #b8221c;
+  }
+
+  .login-links {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+
+  .link-btn {
+    background: none;
+    border: none;
+    color: #db3931;
+    font-size: 0.85rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.3rem;
+  }
+
+  .link-btn:hover {
+    text-decoration: underline;
+  }
+
+  .divider-x {
+    color: #ccc;
+    font-size: 0.85rem;
+  }
+
+  .register-card {
+    position: absolute;
+    background: #ffffff;
+    padding: 2.5rem 2rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+    width: 90%;
+    max-width: 380px;
+    max-height: 85vh;
+    overflow-y: auto;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .register-card.ativo {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .login-card.escondido {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-20px);
+  }
+
+  .register-card h2 {
+    margin: 0 0 1.5rem 0;
+    color: #222222;
+    text-align: center;
+    font-size: 1.5rem;
+  }
+
+  .operador-group {
+    margin-bottom: 1.2rem;
+  }
+
+  .operador-group label.titulo {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #444444;
+    font-size: 0.9rem;
+    font-weight: bold;
+  }
+
+  .operador-opcoes {
+    display: flex;
+    gap: 0.8rem;
+  }
+
+  .operador-opcoes input[type="radio"] {
+    display: none;
+  }
+
+  .operador-opcoes label.opcao {
+    flex: 1;
+    text-align: center;
+    padding: 0.6rem 0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    color: #444;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .operador-opcoes input[type="radio"]:checked + label.opcao {
+    background-color: #db3931;
+    border-color: #db3931;
+    color: #ffffff;
+  }
+
+  .btn-voltar {
+    width: 100%;
+    padding: 0.7rem;
+    background-color: #ffffff;
+    color: #db3931;
+    border: 1px solid #db3931;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 0.6rem;
+  }
+
+  .btn-voltar:hover {
+    background-color: #fdeceb;
+  }
+
+  .recover-card {
+    position: absolute;
+    background: #ffffff;
+    padding: 2.5rem 2rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+    width: 90%;
+    max-width: 380px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .recover-card.ativo {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .recover-card h2 {
+    margin: 0 0 1.5rem 0;
+    color: #222222;
+    text-align: center;
+    font-size: 1.5rem;
+  }
+
+  .recover-card p.recover-texto {
+    color: #555555;
+    font-size: 0.9rem;
+    text-align: center;
+    margin: 0 0 1.2rem 0;
+    line-height: 1.4;
+  }
+
+  .recover-mensagem {
+    display: none;
+    text-align: center;
+    padding: 0.5rem 0 1rem 0;
+  }
+
+  .recover-mensagem.ativo {
+    display: block;
+  }
+
+  .recover-mensagem .icone-ok {
+    font-size: 2.2rem;
+    color: #2e7d32;
+    margin-bottom: 0.6rem;
+  }
+
+  .recover-mensagem p {
+    color: #444444;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    margin: 0 0 1.2rem 0;
+  }
+
+  .recover-mensagem strong {
+    color: #222222;
+  }
+
+  @keyframes fadeOutLogo {
+    0% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-20px);
+      visibility: hidden;
+    }
+  }
+
+  @keyframes fadeInLogin {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto; 
+    }
+  }
+</style>
+
+</head>
+<body>
+  <div class="splash">
+    <div class="goodwe">
+      <img src="https://br.goodwe.com/Public/Uploads/uploadfile/images/20220325/logo3.svg" alt="GoodWe logo">
+    </div>
+
+
+    <div class="login-card">
+      <h2>Entrar</h2>
+      <form>
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" placeholder="seu@email.com" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Senha</label>
+          <input type="password" id="password" placeholder="Digite sua senha" required>
+        </div>
+        <button type="submit" class="btn-submit" onclick="return fazerLogin(event)">Acessar</button>
+      </form>
+
+      <div class="login-links">
+        <button type="button" class="link-btn" onclick="mostrarRecuperar()">Esqueceu a senha?</button>
+        <span class="divider-x">&nbsp;|&nbsp;</span>
+        <button type="button" class="link-btn" onclick="mostrarCadastro()">Criar conta</button>
+      </div>
+    </div>
+
+    <div class="register-card" id="registerCard">
+      <h2>Criar Conta</h2>
+      <form onsubmit="return false;">
+        <div class="form-group">
+          <label for="nomeCompleto">Nome completo</label>
+          <input type="text" id="nomeCompleto" placeholder="Seu nome completo" required>
+        </div>
+        <div class="form-group">
+          <label for="emailCadastro">E-mail</label>
+          <input type="email" id="emailCadastro" placeholder="seu@email.com" required>
+        </div>
+
+        <div class="form-group">
+          <label for="senhaCadastro">Senha</label>
+          <input type="password" id="senhaCadastro" placeholder="Digite sua senha" required>
+        </div>
+        <div class="form-group">
+          <label for="confirmarSenhaCadastro">Confirmar senha</label>
+          <input type="password" id="confirmarSenhaCadastro" placeholder="Repita sua senha" required>
+        </div>
+
+        <div class="operador-group">
+          <label class="titulo">Você é um operador?</label>
+          <div class="operador-opcoes">
+            <input type="radio" name="operador" id="operadorSim" value="sim">
+            <label class="opcao" for="operadorSim">Sim</label>
+
+            <input type="radio" name="operador" id="operadorNao" value="nao">
+            <label class="opcao" for="operadorNao">Não</label>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit" onclick="return fazerCadastro(event)">Cadastrar</button>
+        <button type="button" class="btn-voltar" onclick="mostrarLogin()">Voltar</button>
+      </form>
+    </div>
+
+    <div class="recover-card" id="recoverCard">
+      <h2>Recuperar Senha</h2>
+
+      <div id="recoverForm">
+        <p class="recover-texto">Digite o e-mail cadastrado na sua conta para receber uma nova senha.</p>
+        <form onsubmit="return false;">
+          <div class="form-group">
+            <label for="emailRecuperar">E-mail</label>
+            <input type="email" id="emailRecuperar" placeholder="seu@email.com" required>
+          </div>
+          <button type="submit" class="btn-submit" onclick="return enviarRecuperacao(event)">Enviar</button>
+          <button type="button" class="btn-voltar" onclick="mostrarLogin()">Voltar</button>
+        </form>
+      </div>
+
+      <div class="recover-mensagem" id="recoverMensagem">
+        <div class="icone-ok">&#10003;</div>
+        <p>Sua senha foi enviada para o e-mail <strong id="emailEnviadoTexto"></strong>. Verifique sua caixa de entrada.</p>
+        <button type="button" class="btn-submit" onclick="mostrarLogin()">Voltar para o login</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function mostrarRecuperar() {
+      document.querySelector('.login-card').classList.add('escondido');
+      document.getElementById('recoverCard').classList.add('ativo');
+      document.getElementById('recoverForm').style.display = 'block';
+      document.getElementById('recoverMensagem').classList.remove('ativo');
+    }
+
+    function enviarRecuperacao(event) {
+      event.preventDefault();
+      const email = document.getElementById('emailRecuperar').value;
+
+      if (!email) {
+        alert('Por favor, informe um e-mail válido.');
+        return false;
+      }
+
+      document.getElementById('emailEnviadoTexto').textContent = email;
+      document.getElementById('recoverForm').style.display = 'none';
+      document.getElementById('recoverMensagem').classList.add('ativo');
+      return false;
+    }
+
+    function mostrarCadastro() {
+      document.querySelector('.login-card').classList.add('escondido');
+      document.getElementById('recoverCard').classList.remove('ativo');
+      document.getElementById('registerCard').classList.add('ativo');
+    }
+
+    function mostrarLogin() {
+      document.getElementById('registerCard').classList.remove('ativo');
+      document.getElementById('recoverCard').classList.remove('ativo');
+      document.getElementById('emailRecuperar').value = '';
+      document.querySelector('.login-card').classList.remove('escondido');
+    }
+
+    function fazerLogin(event) {
+      event.preventDefault();
+      window.location.href = 'menu2.html';
+      return false;
+    }
+
+    function fazerCadastro(event) {
+      event.preventDefault();
+
+      const senha = document.getElementById('senhaCadastro').value;
+      const confirmarSenha = document.getElementById('confirmarSenhaCadastro').value;
+
+      if (senha !== confirmarSenha) {
+        alert('As senhas não coincidem. Verifique e tente novamente.');
+        return false;
+      }
+
+      window.location.href = 'menu2.html';
+      return false;
+    }
+  </script>
+</body>
+</html>
