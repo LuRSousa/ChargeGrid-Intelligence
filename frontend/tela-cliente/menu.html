@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoodWe</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background: #f4f4f4;
+    font-family: Arial, sans-serif;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+
+  body.dark-mode {
+    background: #15171b;
+  }
+
+  /* Áreas de Conteúdo */
+  .conteudo {
+    padding: 20px 20px 120px 20px;
+    text-align: center;
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  .aba-conteudo {
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .aba-conteudo.ativa {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+
+  .titulo-secao {
+    color: #222222;
+    transition: color 0.3s ease;
+  }
+
+  .texto-secao {
+    color: #4a4a4a;
+    transition: color 0.3s ease;
+  }
+
+  body.dark-mode .titulo-secao {
+    color: #f0f0f0;
+  }
+
+  body.dark-mode .texto-secao {
+    color: #b5b8bd;
+  }
+
+  .topo-app {
+    max-width: 380px;
+    margin: 0 auto 10px auto;
+    padding-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .btn-tema {
+    position: absolute;
+    right: 0;
+    top: 6px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid #dddddd;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+
+  .btn-tema svg {
+    width: 20px;
+    height: 20px;
+    fill: #db3931;
+  }
+
+  body.dark-mode .btn-tema {
+    background: #22252b;
+    border-color: #3a3d44;
+  }
+
+  body.dark-mode .btn-tema svg {
+    fill: #e6453d;
+  }
+
+  .mapa-card {
+    max-width: 380px;
+    margin: 15px auto 0 auto;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  body.dark-mode .mapa-card {
+    background: #1f2228;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  .mapa-card h2 {
+    font-size: 0.95rem;
+    color: #db3931;
+    margin: 0 0 8px 0;
+    text-align: left;
+    padding-left: 4px;
+    font-weight: bold;
+  }
+
+  body.dark-mode .mapa-card h2 {
+    color: #e6453d;
+  }
+
+  #mapa {
+    width: 100%;
+    height: 250px;
+    max-height: 250px;
+    border-radius: 10px;
+    z-index: 1;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.55);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    backdrop-filter: blur(3px);
+  }
+
+  .modal-overlay.ativo {
+    display: flex;
+    animation: fadeIn 0.2s ease;
+  }
+
+  .modal-card {
+    background: #ffffff;
+    width: 340px;
+    max-width: 90%;
+    padding: 24px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+    text-align: center;
+    transition: background 0.3s ease;
+  }
+
+  body.dark-mode .modal-card {
+    background: #1f2228;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  }
+
+  .modal-card h3 {
+    margin-top: 0;
+    color: #333;
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+  }
+
+  body.dark-mode .modal-card h3 {
+    color: #f0f0f0;
+  }
+
+  body.dark-mode .modal-card p {
+    color: #b5b8bd !important;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+    text-align: left;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 0.85rem;
+    color: #555;
+    margin-bottom: 6px;
+    font-weight: bold;
+  }
+
+  body.dark-mode .form-group label {
+    color: #cfd2d7;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s, background 0.3s ease, color 0.3s ease;
+  }
+
+  body.dark-mode .form-group input {
+    background: #2a2d34;
+    border-color: #3a3d44;
+    color: #f0f0f0;
+  }
+
+  .form-group input:focus {
+    border-color: #db3931;
+  }
+
+  body.dark-mode .form-group input:focus {
+    border-color: #e6453d;
+  }
+  .modo-carregamento {
+    margin-bottom: 18px;
+    text-align: left;
+  }
+
+  .modo-carregamento label.titulo-modo {
+    display: block;
+    font-size: 0.85rem;
+    color: #555;
+    margin-bottom: 8px;
+    font-weight: bold;
+  }
+
+  body.dark-mode .modo-carregamento label.titulo-modo {
+    color: #cfd2d7;
+  }
+
+  .modo-opcoes {
+    display: flex;
+    gap: 8px;
+  }
+
+  .modo-opcao {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 6px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    background: #f7f7f7;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .modo-opcao svg {
+    width: 22px;
+    height: 22px;
+    fill: #888;
+    transition: fill 0.2s ease;
+  }
+
+  .modo-opcao span {
+    font-size: 0.72rem;
+    color: #666;
+    font-weight: bold;
+    text-align: center;
+  }
+
+  .modo-opcao.selecionado {
+    background: #fdeceb;
+    border-color: #db3931;
+  }
+
+  .modo-opcao.selecionado svg {
+    fill: #db3931;
+  }
+
+  .modo-opcao.selecionado span {
+    color: #db3931;
+  }
+
+  body.dark-mode .modo-opcao {
+    background: #2a2d34;
+    border-color: #3a3d44;
+  }
+
+  body.dark-mode .modo-opcao svg {
+    fill: #8b8e94;
+  }
+
+  body.dark-mode .modo-opcao span {
+    color: #8b8e94;
+  }
+
+  body.dark-mode .modo-opcao.selecionado {
+    background: rgba(230, 69, 61, 0.15);
+    border-color: #e6453d;
+  }
+
+  body.dark-mode .modo-opcao.selecionado svg {
+    fill: #e6453d;
+  }
+
+  body.dark-mode .modo-opcao.selecionado span {
+    color: #e6453d;
+  }
+
+  .tarifa-info {
+    font-size: 0.75rem;
+    color: #777;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  body.dark-mode .tarifa-info {
+    color: #8b8e94;
+  }
+
+  .modal-acoes {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-confirmar {
+    flex: 1;
+    background: #db3931;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .btn-confirmar:hover {
+    background: #b8221c;
+  }
+
+  .btn-cancelar {
+    flex: 1;
+    background: #e0e0e0;
+    color: #333;
+    border: none;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .btn-cancelar:hover {
+    background: #d0d0d0;
+  }
+
+  body.dark-mode .btn-cancelar {
+    background: #33363c;
+    color: #e6e6e6;
+  }
+
+  body.dark-mode .btn-cancelar:hover {
+    background: #3d4046;
+  }
+
+  .quadrado {
+    position: fixed;        
+    bottom: 30px;           
+    left: 50%;              
+    transform: translateX(-50%);
+    width: 550px;
+    max-width: 90%;
+    height: 60px;
+    background: linear-gradient(180deg, #db3931 0%, #f71612 100%);
+    border-radius: 35px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+    z-index: 1000;
+    transition: background 0.3s ease;
+  }
+
+  body.dark-mode .quadrado {
+    background: #1f2228;
+    border: 1px solid #33363c;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  }
+
+  .btn-menu {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+  }
+
+  body.dark-mode .btn-menu {
+    color: #8b8e94;
+  }
+
+  .btn-menu svg {
+    width: 28px;
+    height: 28px;
+    fill: currentColor;
+  }
+
+  .btn-menu.ativo {
+    color: #db3931;
+    background-color: #ffffff;
+    transform: scale(1.1);
+  }
+
+  body.dark-mode .btn-menu.ativo {
+    color: #ffffff;
+    background-color: #db3931;
+  }
+
+  .btn-menu:hover {
+    color: #ffffff;
+  }
+
+  body.dark-mode .btn-menu:hover {
+    color: #e6453d;
+  }
+  body.dark-mode .btn-personalizar {
+    background: transparent !important;
+    border-color: #e6453d !important;
+    color: #e6453d !important;
+  }
+</style>
+
+</head>
+
+<body>
+
+  <main class="conteudo">
+    <div class="topo-app">
+      <img src="https://br.goodwe.com/Public/Uploads/uploadfile/images/20220325/logo3.svg" alt="GoodWe" style="height: 32px;">
+
+      <button class="btn-tema" onclick="alternarTema()" title="Alternar tema" id="btnTema">
+        <svg id="iconeTema" viewBox="0 0 24 24">
+          <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/>
+        </svg>
+      </button>
+    </div>
+
+    <section id="home" class="aba-conteudo ativa">
+      <h1 class="titulo-secao">Bem vindo de volta!</h1>
+      <p class="texto-secao" style="margin-bottom: 10px; font-size: 0.95rem;">Estações de recarga próximas</p>
+
+      <div class="mapa-card">
+        <h2>Postos Próximos</h2>
+        <div id="mapa"></div>
+      </div>
+    </section>
+
+    <section id="carro" class="aba-conteudo">
+      <h1 class="titulo-secao">Carregamento do Veículo</h1>
+      <p class="texto-secao">Status atual: Conexão estabelecida</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 12px; max-width: 300px; margin: 20px auto 0 auto;">
+        <button onclick="abrirModalMaxima()" style="padding: 14px 28px; font-size: 16px; border-radius: 20px; border: none; background: #db3931; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+          Iniciar Carregamento
+        </button>
+
+        <button onclick="abrirModal()" class="btn-personalizar" style="padding: 14px 28px; font-size: 16px; border-radius: 20px; border: 2px solid #db3931; background: #ffffff; color: #db3931; cursor: pointer; font-weight: bold;">
+          Personalizar Carregamento
+        </button>
+      </div>
+    </section>
+
+    <section id="perfil" class="aba-conteudo">
+      <h1 class="titulo-secao">Meu Perfil</h1>
+      <p class="texto-secao"><strong>Usuário:</strong> Cliente GoodWe</p>
+      <p class="texto-secao"><strong>E-mail:</strong> usuario@goodwe.com</p>
+    </section>
+  </main>
+
+  <div id="modalCarregamento" class="modal-overlay">
+    <div class="modal-card">
+      <h3>Personalizar Carga</h3>
+
+        <div class="modo-carregamento">
+        <label class="titulo-modo">Modo de Carregamento</label>
+        <div class="modo-opcoes" id="modoOpcoes">
+          <div class="modo-opcao selecionado" data-modo="fast" onclick="selecionarModo('fast', this)">
+            <svg viewBox="0 0 24 24"><path d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66.19-.34.05-.08.07-.12C8.48 10.94 10.42 7.54 13 3h1l-1 7h3.5c.49 0 .56.33.47.51l-.07.15C12.96 17.55 11 21 11 21z"/></svg>
+            <span>Fast</span>
+          </div>
+          <div class="modo-opcao" data-modo="pv" onclick="selecionarModo('pv', this)">
+            <svg viewBox="0 0 24 24"><path d="M6 3l-3 5h5l-2 5h5l-3 5 9-9h-5l3-5H9l2-5H6z" transform="scale(0.9) translate(1.3,0)"/><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="0" /></svg>
+            <span>PV Priority</span>
+          </div>
+          <div class="modo-opcao" data-modo="bateria" onclick="selecionarModo('bateria', this)">
+            <svg viewBox="0 0 24 24"><path d="M16.67 4H15V2h-6v2H7.33C6.6 4 6 4.6 6 5.33v15.33C6 21.4 6.6 22 7.33 22h9.33c.74 0 1.34-.6 1.34-1.33V5.33C18 4.6 17.4 4 16.67 4z"/></svg>
+            <span>PV&amp;Battery</span>
+
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="inputValor">Quanto vai pagar (R$):</label>
+        <input type="number" id="inputValor" placeholder="Ex: 50.00" min="0" step="1" oninput="atualizarPorValor()">
+      </div>
+
+      <span class="tarifa-info" id="valorEmKwh">*Tarifa estimativa: R$ 2,50 por kWh</span>
+
+      <div class="modal-acoes">
+        <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+        <button class="btn-confirmar" onclick="confirmarCarregamento()">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalMaxima" class="modal-overlay">
+    <div class="modal-card">
+      <h3>Iniciar Carregamento</h3>
+      <p style="color: #555; font-size: 0.92rem; line-height: 1.5; margin-bottom: 20px;">
+        O veículo será carregado até a <strong>capacidade máxima da bateria</strong>. Deseja continuar?
+      </p>
+
+      <div class="modal-acoes">
+        <button class="btn-cancelar" onclick="fecharModalMaxima()">Cancelar</button>
+        <button class="btn-confirmar" onclick="confirmarCarregamentoMaximo()">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <nav class="quadrado">
+    <button class="btn-menu ativo" onclick="trocarAba('home', this)" title="Início">
+      <svg viewBox="0 0 24 24">
+        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+      </svg>
+    </button>
+
+    <button class="btn-menu" onclick="trocarAba('carro', this)" title="Carregamento">
+      <svg viewBox="0 0 24 24">
+        <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 7h10.29l1.04 3H5.81l1.04-3zM19 17H5v-4h14v4z"/>
+        <circle cx="7.5" cy="15" r="1.5"/>
+        <circle cx="16.5" cy="15" r="1.5"/>
+      </svg>
+    </button>
+
+    <button class="btn-menu" onclick="trocarAba('perfil', this)" title="Perfil">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+      </svg>
+    </button>
+  </nav>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    let map = null;
+    const TARIFA_POR_KWH = 2.50;
+
+    function inicializarMapa() {
+      if (map !== null) return;
+
+      const lat = -23.561684;
+      const lng = -46.655981;
+
+      map = L.map('mapa').setView([lat, lng], 14);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(map);
+
+      const postos = [
+        { nome: "Posto GoodWe - Paulista", lat: -23.561684, lng: -46.655981, status: "Disponível" },
+        { nome: "Posto Eletra - Consolação", lat: -23.555500, lng: -46.660000, status: "Disponível" },
+        { nome: "Posto Shell Recharge", lat: -23.568000, lng: -46.665000, status: "Ocupado" }
+      ];
+
+      postos.forEach(posto => {
+        L.marker([posto.lat, posto.lng])
+          .addTo(map)
+          .bindPopup(`<b>${posto.nome}</b><br>${posto.status}`);
+      });
+    }
+
+    window.onload = function() {
+      inicializarMapa();
+    };
+
+    function trocarAba(idAba, elementoBotao) {
+      const abas = document.querySelectorAll('.aba-conteudo');
+      abas.forEach(aba => aba.classList.remove('ativa'));
+
+      const botoes = document.querySelectorAll('.btn-menu');
+      botoes.forEach(btn => btn.classList.remove('ativo'));
+
+      document.getElementById(idAba).classList.add('ativa');
+      elementoBotao.classList.add('ativo');
+
+      if (idAba === 'home' && map) {
+        setTimeout(() => map.invalidateSize(), 200);
+      }
+    }
+
+    function abrirModal() {
+      document.getElementById('modalCarregamento').classList.add('ativo');
+    }
+
+    let modoSelecionado = 'fast';
+
+    function selecionarModo(modo, elemento) {
+      modoSelecionado = modo;
+      document.querySelectorAll('.modo-opcao').forEach(op => op.classList.remove('selecionado'));
+      elemento.classList.add('selecionado');
+    }
+
+    function fecharModal() {
+      document.getElementById('modalCarregamento').classList.remove('ativo');
+      document.getElementById('inputValor').value = '';
+      document.getElementById('valorEmKwh').textContent = '*Tarifa estimativa: R$ 2,50 por kWh';
+      document.querySelectorAll('.modo-opcao').forEach(op => op.classList.remove('selecionado'));
+      document.querySelector('.modo-opcao[data-modo="fast"]').classList.add('selecionado');
+      modoSelecionado = 'fast';
+    }
+
+    function atualizarPorValor() {
+      const valorInput = document.getElementById('inputValor');
+      const valor = parseFloat(valorInput.value);
+
+      if (!isNaN(valor) && valor >= 0) {
+        const kwhEquivalente = (valor / TARIFA_POR_KWH).toFixed(1);
+        document.getElementById('valorEmKwh')
+      } else {
+        document.getElementById('valorEmKwh').textContent = '*Tarifa estimativa: R$ 2,50 por kWh';
+      }
+    }
+
+    function confirmarCarregamento() {
+      const valor = document.getElementById('inputValor').value;
+
+      if (!valor || parseFloat(valor) <= 0) {
+        const nomesModo = { fast: 'Fast', pv: 'PV Priority', bateria: 'PV&Battery' };
+        alert(`Carga de R$ ${valor} (aprox. ${kwhEquivalente} kWh) no modo ${nomesModo[modoSelecionado]} enviada com sucesso!`);
+        return;
+      }
+
+      const kwhEquivalente = (parseFloat(valor) / TARIFA_POR_KWH).toFixed(1);
+      alert(`Carga de R$ ${valor} (aprox. ${kwhEquivalente} kWh) enviada com sucesso!`);
+      fecharModal();
+    }
+
+    function abrirModalMaxima() {
+      document.getElementById('modalMaxima').classList.add('ativo');
+    }
+
+    function fecharModalMaxima() {
+      document.getElementById('modalMaxima').classList.remove('ativo');
+    }
+
+    function confirmarCarregamentoMaximo() {
+      alert('Carregamento iniciado! O veículo será carregado até a capacidade máxima da bateria.');
+      fecharModalMaxima();
+    }
+
+    const iconeSol = '<path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/>';
+    const iconeLua = '<path d="M12 7c0-1.77.72-3.37 1.88-4.53A9.994 9.994 0 0 0 2 12c0 5.52 4.48 10 10 10a9.994 9.994 0 0 0 9.53-6.88A7 7 0 0 1 12 7z"/><circle cx="6.5" cy="8.5" r="0.8"/><circle cx="9" cy="14" r="0.6"/><circle cx="15" cy="16" r="0.7"/>';
+
+    function aplicarTema(tema) {
+      const icone = document.getElementById('iconeTema');
+      if (tema === 'dark') {
+        document.body.classList.add('dark-mode');
+        icone.innerHTML = iconeLua;
+      } else {
+        document.body.classList.remove('dark-mode');
+        icone.innerHTML = iconeSol;
+      }
+    }
+
+    function alternarTema() {
+      const escuroAtivo = document.body.classList.contains('dark-mode');
+      const novoTema = escuroAtivo ? 'light' : 'dark';
+      aplicarTema(novoTema);
+      try {
+        localStorage.setItem('goodwe-tema', novoTema);
+      } catch (e) {
+      }
+    }
+
+    (function iniciarTema() {
+      let temaSalvo = 'light';
+      try {
+        temaSalvo = localStorage.getItem('goodwe-tema') || 'light';
+      } catch (e) {
+        temaSalvo = 'light';
+      }
+      aplicarTema(temaSalvo);
+    })();
+  </script>
+
+</body>
+</html>
