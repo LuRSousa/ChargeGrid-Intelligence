@@ -143,23 +143,19 @@ router.post('/criar-novo-usuario', async (req, res) => {
 router.post("/buscar-email", async (req, res) => {
     try {
         const { email } = req.body;
-
         if (!email) {
             return res.status(400).json({ mensagem: "O campo 'email' é obrigatório." });
         }
 
         const usuario = await UsuarioModel.buscarPorEmail(email);
-
         if (!usuario) {
             return res.status(404).json({ mensagem: `Usuário com o e-mail ${email} não foi encontrado.` });
         }
 
+        delete usuario.senha_hash;
         return res.status(200).json(usuario);
     } catch (error) {
-        return res.status(500).json({ 
-            erro: "Erro ao buscar usuário pelo e-mail.", 
-            detalhe: error.message 
-        });
+        return res.status(500).json({ erro: "Erro ao buscar usuário pelo e-mail.", detalhe: error.message });
     }
 });
 
