@@ -440,24 +440,51 @@
       document.querySelector('.login-card').classList.remove('escondido');
     }
 
-    function fazerLogin(event) {
+    async function fazerLogin(event) {
       event.preventDefault();
-      window.location.href = 'menu2.html';
+
+      const resp = await fetch('http://localhost:3000/api/usuario/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+              email: document.getElementById('email').value,
+              senha: document.getElementById('password').value
+          })
+      });
+      const dados = await resp.json();
+
+      if (!resp.ok) { alert(dados.mensagem || 'E-mail ou senha inválidos.'); return false; }
+      
+      window.location.href = 'menu.html';
       return false;
     }
 
-    function fazerCadastro(event) {
+    async function fazerCadastro(event) {
       event.preventDefault();
 
       const senha = document.getElementById('senhaCadastro').value;
       const confirmarSenha = document.getElementById('confirmarSenhaCadastro').value;
+      if (senha !== confirmarSenha) { alert('As senhas não coincidem.'); return false; }
 
-      if (senha !== confirmarSenha) {
-        alert('As senhas não coincidem. Verifique e tente novamente.');
-        return false;
-      }
+      const ehOperador = document.getElementById('operadorSim').checked;
 
-      window.location.href = 'menu2.html';
+      const resp = await fetch('http://localhost:3000/api/usuario/criar-novo-usuario', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+              nome: document.getElementById('nomeCompleto').value,
+              email: document.getElementById('emailCadastro').value,
+              senha: senha,
+              tipo_conta: ehOperador ? 'operador' : 'cliente'
+          })
+      });
+      const dados = await resp.json();
+
+      if (dados.mensagem === 'Email já cadastrado') { alert(dados.mensagem); return false; }
+      if (!dados.id) { alert('Erro ao cadastrar.'); return false; }
+
+      localStorage.setItem('usuarioId', dados.id);
+      window.location.href = 'menu.html';
       return false;
     }
   </script>

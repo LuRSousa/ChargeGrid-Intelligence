@@ -482,9 +482,15 @@
 
     <section id="carro" class="aba-conteudo">
       <h1 class="titulo-secao">Carregamento do Veículo</h1>
-      <p class="texto-secao">Status atual: Conexão estabelecida</p>
+      <p class="texto-secao">Status atual: Sessão não vinculada</p>
+
+      <div id="vincularRFID" class="form-group" style="max-width: 300px; margin: 0 auto 16px;">
+          <label for="inputRfid">Cartão RFID</label>
+          <input type="text" id="inputRfid" placeholder="Digite o UID do cartão">
+          <button onclick="buscarSessaoAtiva()" style="margin-top:8px; width:100%;">Identificar sessão</button>
+      </div>
       
-      <div style="display: flex; flex-direction: column; gap: 12px; max-width: 300px; margin: 20px auto 0 auto;">
+      <div id="iniciarCarregamento" style="display: none; flex-direction: column; gap: 12px; max-width: 300px; margin: 20px auto 0 auto;">
         <button onclick="abrirModalMaxima()" style="padding: 14px 28px; font-size: 16px; border-radius: 20px; border: none; background: #db3931; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
           Iniciar Carregamento
         </button>
@@ -493,12 +499,48 @@
           Personalizar Carregamento
         </button>
       </div>
+
+      <div id="painelAcompanhamento" style="display:none; max-width:320px; margin:20px auto 0;">
+        <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 4px 12px rgba(0,0,0,0.12); text-align:left;">
+          <p class="texto-secao"><strong>Status:</strong> <span id="infoStatus">-</span></p>
+          <p class="texto-secao"><strong>Modo:</strong> <span id="infoModo">-</span></p>
+          <p class="texto-secao"><strong>Potência atual:</strong> <span id="infoPotencia">-</span> kW</p>
+          <p class="texto-secao"><strong>Energia consumida:</strong> <span id="infoEnergia">-</span> kWh</p>
+          <p class="texto-secao"><strong>Custo até agora:</strong> R$ <span id="infoCusto">-</span></p>
+          <p class="texto-secao" id="infoAvisoLimite" style="color:#db3931; font-weight:bold; display:none;"></p>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:12px; margin-top:16px;">
+          <button onclick="atualizarStatusSessao()" style="padding:14px; font-size:16px; border-radius:20px; border:2px solid #db3931; background:#fff; color:#db3931; font-weight:bold; cursor:pointer;">
+            Atualizar
+          </button>
+          <button onclick="encerrarSessaoAtiva()" style="padding:14px; font-size:16px; border-radius:20px; border:none; background:#db3931; color:#fff; font-weight:bold; cursor:pointer;">
+            Encerrar Carregamento
+          </button>
+        </div>
+      </div>
+
+      <div id="painelFatura" style="display:none; max-width:320px; margin:20px auto 0;">
+        <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 4px 12px rgba(0,0,0,0.12); text-align:left;">
+          <h3 style="margin-top:0; color:#db3931;">Resumo da recarga</h3>
+          <p class="texto-secao"><strong>Energia consumida:</strong> <span id="faturaEnergia">-</span> kWh</p>
+          <p class="texto-secao"><strong>Duração:</strong> <span id="faturaDuracao">-</span> min</p>
+          <p class="texto-secao" style="font-size:1.3rem; margin-top:12px;">
+            <strong>Total: R$ <span id="faturaValor">-</span></strong>
+          </p>
+          <p class="texto-secao" id="faturaStatus" style="font-weight:bold;">Status: -</p>
+        </div>
+
+        <button id="btnPagarFatura" onclick="pagarFaturaAtual()" style="width:100%; margin-top:16px; padding:14px; font-size:16px; border-radius:20px; border:none; background:#db3931; color:#fff; font-weight:bold; cursor:pointer;">
+          Pagar agora
+        </button>
+      </div>
     </section>
 
     <section id="perfil" class="aba-conteudo">
       <h1 class="titulo-secao">Meu Perfil</h1>
-      <p class="texto-secao"><strong>Usuário:</strong> Cliente GoodWe</p>
-      <p class="texto-secao"><strong>E-mail:</strong> usuario@goodwe.com</p>
+      <p class="texto-secao"><strong>Usuário:</strong> <span id="perfilNome">-</span></p>
+      <p class="texto-secao"><strong>E-mail:</strong> <span id="perfilEmail">-</span></p>
     </section>
   </main>
 
@@ -509,17 +551,17 @@
         <div class="modo-carregamento">
         <label class="titulo-modo">Modo de Carregamento</label>
         <div class="modo-opcoes" id="modoOpcoes">
-          <div class="modo-opcao selecionado" data-modo="fast" onclick="selecionarModo('fast', this)">
+          <div class="modo-opcao selecionado" data-modo="rapido" onclick="selecionarModo('rapido', this)">
             <svg viewBox="0 0 24 24"><path d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66.19-.34.05-.08.07-.12C8.48 10.94 10.42 7.54 13 3h1l-1 7h3.5c.49 0 .56.33.47.51l-.07.15C12.96 17.55 11 21 11 21z"/></svg>
-            <span>Fast</span>
+            <span>Rápido</span>
           </div>
-          <div class="modo-opcao" data-modo="pv" onclick="selecionarModo('pv', this)">
+          <div class="modo-opcao" data-modo="FV" onclick="selecionarModo('FV', this)">
             <svg viewBox="0 0 24 24"><path d="M6 3l-3 5h5l-2 5h5l-3 5 9-9h-5l3-5H9l2-5H6z" transform="scale(0.9) translate(1.3,0)"/><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="0" /></svg>
-            <span>PV Priority</span>
+            <span>Prioridade FV</span>
           </div>
-          <div class="modo-opcao" data-modo="bateria" onclick="selecionarModo('bateria', this)">
+          <div class="modo-opcao" data-modo="FV_baterias" onclick="selecionarModo('FV_baterias', this)">
             <svg viewBox="0 0 24 24"><path d="M16.67 4H15V2h-6v2H7.33C6.6 4 6 4.6 6 5.33v15.33C6 21.4 6.6 22 7.33 22h9.33c.74 0 1.34-.6 1.34-1.33V5.33C18 4.6 17.4 4 16.67 4z"/></svg>
-            <span>PV&amp;Battery</span>
+            <span>FV + Baterias</span>
 
           </div>
         </div>
@@ -533,7 +575,7 @@
 
       <div class="modal-acoes">
         <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
-        <button class="btn-confirmar" onclick="confirmarCarregamento()">Confirmar</button>
+        <button class="btn-confirmar" onclick="confirmarCarregamento()">Iniciar Carregamento</button>
       </div>
     </div>
   </div>
@@ -594,8 +636,8 @@
 
       const postos = [
         { nome: "Posto GoodWe - Paulista", lat: -23.561684, lng: -46.655981, status: "Disponível" },
-        { nome: "Posto Eletra - Consolação", lat: -23.555500, lng: -46.660000, status: "Disponível" },
-        { nome: "Posto Shell Recharge", lat: -23.568000, lng: -46.665000, status: "Ocupado" }
+        { nome: "Posto Parceiro A", lat: -23.555500, lng: -46.660000, status: "Disponível" },
+        { nome: "Posto Parceiro B", lat: -23.568000, lng: -46.665000, status: "Ocupado" }
       ];
 
       postos.forEach(posto => {
@@ -605,8 +647,27 @@
       });
     }
 
+    async function carregarPerfil() {
+      const usuarioId = localStorage.getItem('usuarioId');
+      if (!usuarioId) {
+          document.getElementById('perfilNome').textContent = 'Não autenticado';
+          return;
+      }
+
+      try {
+          const resp = await fetch(`http://localhost:3000/api/usuario/${usuarioId}`);
+          const usuario = await resp.json();
+
+          document.getElementById('perfilNome').textContent = usuario.nome;
+          document.getElementById('perfilEmail').textContent = usuario.email;
+      } catch (e) {
+          document.getElementById('perfilNome').textContent = 'Erro ao carregar';
+      }
+    }
+
     window.onload = function() {
       inicializarMapa();
+      carregarPerfil();
     };
 
     function trocarAba(idAba, elementoBotao) {
@@ -624,11 +685,43 @@
       }
     }
 
+    let sessaoAtivaId = null;
+    let carregadorAtivoId = null;
+
+    async function buscarSessaoAtiva() {
+      const uid = document.getElementById('inputRfid').value.trim();
+      const telaRFID = document.getElementById('vincularRFID');
+      const telaCarregamento = document.getElementById('iniciarCarregamento');
+      const textoSecao = document.querySelector('#carro .texto-secao');
+      if (!uid) { alert('Digite o UID do cartão'); return; }
+
+      try {
+          const resp = await fetch(`http://localhost:3000/api/sessoes/ativa?id=${encodeURIComponent(uid)}`);
+          const dados = await resp.json();
+
+          if (!dados.sucesso) {
+              alert(dados.erro || 'Nenhuma sessão ativa encontrada para este cartão.');
+              return;
+          }
+
+          sessaoAtivaId = dados.dados.id;
+          carregadorAtivoId = dados.dados.carregador_id;
+          localStorage.setItem('sessaoAtivaId', sessaoAtivaId);
+          localStorage.setItem('carregadorAtivoId', carregadorAtivoId);
+          alert(`Sessão ${sessaoAtivaId} identificada!`);
+          telaRFID.style.display = 'none';
+          telaCarregamento.style.display = 'flex';
+          textoSecao.textContent = 'Status atual: Sessão vinculada';
+      } catch (e) {
+          alert('Erro ao conectar com o servidor.');
+      }
+    }
+
     function abrirModal() {
       document.getElementById('modalCarregamento').classList.add('ativo');
     }
 
-    let modoSelecionado = 'fast';
+    let modoSelecionado = 'rapido';
 
     function selecionarModo(modo, elemento) {
       modoSelecionado = modo;
@@ -641,8 +734,8 @@
       document.getElementById('inputValor').value = '';
       document.getElementById('valorEmKwh').textContent = '*Tarifa estimativa: R$ 2,50 por kWh';
       document.querySelectorAll('.modo-opcao').forEach(op => op.classList.remove('selecionado'));
-      document.querySelector('.modo-opcao[data-modo="fast"]').classList.add('selecionado');
-      modoSelecionado = 'fast';
+      document.querySelector('.modo-opcao[data-modo="rapido"]').classList.add('selecionado');
+      modoSelecionado = 'rapido';
     }
 
     function atualizarPorValor() {
@@ -657,18 +750,174 @@
       }
     }
 
-    function confirmarCarregamento() {
-      const valor = document.getElementById('inputValor').value;
+    async function confirmarCarregamento() {
+      const iniciarCarregamento = document.getElementById('iniciarCarregamento');
+      const painelAcompanhamento = document.getElementById('painelAcompanhamento');
+      const textoSecao = document.querySelector('#carro .texto-secao');
+      if (!sessaoAtivaId) { alert('Identifique a sessão pelo cartão primeiro.'); return; }
 
-      if (!valor || parseFloat(valor) <= 0) {
-        const nomesModo = { fast: 'Fast', pv: 'PV Priority', bateria: 'PV&Battery' };
-        alert(`Carga de R$ ${valor} (aprox. ${kwhEquivalente} kWh) no modo ${nomesModo[modoSelecionado]} enviada com sucesso!`);
-        return;
+      const valor = parseFloat(document.getElementById('inputValor').value);
+      if (!valor || valor <= 0) {
+          alert('Informe um valor válido.');
+          return;
       }
 
-      const kwhEquivalente = (parseFloat(valor) / TARIFA_POR_KWH).toFixed(1);
-      alert(`Carga de R$ ${valor} (aprox. ${kwhEquivalente} kWh) enviada com sucesso!`);
+      // Mapeamento direto: alinhar os data-modo do HTML com o enum do banco
+      // evita essa tradução no meio do caminho (ver observação abaixo)
+      const resp = await fetch(`http://localhost:3000/api/sessoes/iniciar-carregamento/${sessaoAtivaId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ limite_valor: valor, modo_carga: modoSelecionado })
+      });
+      const dados = await resp.json();
+
+      if (!dados.sucesso) {
+          alert(dados.erro);
+          return;
+      }
+
+      iniciarCarregamento.style.display = 'none';
+      painelAcompanhamento.style.display = 'flex';
+      textoSecao.textContent = 'Status atual: Sessão iniciada';
+      alert('Carregamento iniciado com sucesso!');
       fecharModal();
+      atualizarStatusSessao();
+    }
+
+    async function confirmarCarregamentoMaximo() {
+      const iniciarCarregamento = document.getElementById('iniciarCarregamento');
+      const painelAcompanhamento = document.getElementById('painelAcompanhamento');
+      const textoSecao = document.querySelector('#carro .texto-secao');
+      if (!sessaoAtivaId) { alert('Identifique a sessão pelo cartão primeiro.'); return; }
+
+      const resp = await fetch(`http://localhost:3000/api/sessoes/iniciar-carregamento/${sessaoAtivaId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}) // sem limite_valor — carrega até completar
+      });
+      const dados = await resp.json();
+
+      if (!dados.sucesso) { alert(dados.erro); return; }
+
+      iniciarCarregamento.style.display = 'none';
+      painelAcompanhamento.style.display = 'flex';
+      textoSecao.textContent = 'Status atual: Sessão iniciada';
+      alert('Carregamento iniciado! Até a capacidade máxima da bateria.');
+      fecharModalMaxima();
+      atualizarStatusSessao();
+    }
+
+    async function atualizarStatusSessao() {
+      if (!sessaoAtivaId) return;
+
+      try {
+          const resp = await fetch(`http://localhost:3000/api/sessoes/status/${sessaoAtivaId}`);
+          const dados = await resp.json();
+
+          if (!dados.sucesso) {
+              alert(dados.erro || 'Erro ao buscar status da sessão.');
+              return;
+          }
+
+          const nomesModo = { rapido: 'Rápido', FV: 'Prioridade Solar', FV_baterias: 'Solar + Bateria' };
+
+          document.getElementById('infoStatus').textContent = dados.dados.sessao_status;
+          document.getElementById('infoModo').textContent = nomesModo[dados.dados.modo_carga] || dados.dados.modo_carga;
+          document.getElementById('infoPotencia').textContent = (dados.potencia_instantanea ?? 0).toFixed(2);
+          document.getElementById('infoEnergia').textContent = (dados.energia_atual ?? 0).toFixed(3);
+          document.getElementById('infoCusto').textContent = (dados.custo_atual ?? 0).toFixed(2);
+
+          const avisoEl = document.getElementById('infoAvisoLimite');
+          if (dados.aviso_limite && dados.aviso_limite.atingido) {
+              avisoEl.textContent = '⚠️ Você atingiu o limite definido!';
+              avisoEl.style.display = 'block';
+          } else {
+              avisoEl.style.display = 'none';
+          }
+
+      } catch (e) {
+          alert('Erro ao conectar com o servidor.');
+      }
+    }
+
+    let faturaAtualId = null;
+
+    async function encerrarSessaoAtiva() {
+      if (!sessaoAtivaId) return;
+      if (!confirm('Deseja realmente encerrar o carregamento?')) return;
+
+      const energia = parseFloat(document.getElementById('infoEnergia').textContent) || 0;
+      const custo = parseFloat(document.getElementById('infoCusto').textContent) || 0;
+
+      try {
+          const resp = await fetch(`http://localhost:3000/api/sessoes/encerrar/${sessaoAtivaId}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                  rfid_uid: document.getElementById('inputRfid').value.trim(),
+                  carregador_id: carregadorAtivoId,
+                  duracao_minutos: 0,
+                  energia_kwh: energia,
+                  tarifa_aplicada: 0,
+                  custo_total: custo
+              })
+          });
+          const dados = await resp.json();
+
+          if (!dados.sucesso) { alert(dados.erro); return; }
+
+          mostrarTelaFatura(dados.fatura); // troca o alert por uma tela de verdade
+
+      } catch (e) {
+          alert('Erro ao conectar com o servidor.');
+      }
+    }
+
+    function mostrarTelaFatura(fatura) {
+      faturaAtualId = fatura.id;
+
+      document.getElementById('painelAcompanhamento').style.display = 'none';
+      document.getElementById('painelFatura').style.display = 'flex';
+
+      document.getElementById('faturaEnergia').textContent = fatura.energia_kwh ?? '-';
+      document.getElementById('faturaDuracao').textContent = fatura.duracao_minutos ?? '-';
+      document.getElementById('faturaValor').textContent = Number(fatura.valor_total).toFixed(2);
+      document.getElementById('faturaStatus').textContent = `Status: ${fatura.status_pagamento}`;
+    }
+
+    async function pagarFaturaAtual() {
+      if (!faturaAtualId) return;
+
+      try {
+          const resp = await fetch(`http://localhost:3000/api/pagamento/pagar/${faturaAtualId}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                  metodo_pagamento: 'pix',
+                  transacao_externa_id: 'TESTE-PWA-' + Date.now()
+              })
+          });
+          const dados = await resp.json();
+
+          if (!dados.sucesso) { alert(dados.mensagem); return; }
+
+          document.getElementById('faturaStatus').textContent = `Status: ${dados.fatura.status_pagamento}`;
+          document.getElementById('btnPagarFatura').textContent = 'Pago ✓';
+          document.getElementById('btnPagarFatura').disabled = true;
+          document.getElementById('btnPagarFatura').style.opacity = '0.6';
+          document.getElementById('btnPagarFatura').style.cursor = 'default';
+
+          // Depois de alguns segundos, volta para a tela inicial de carregamento
+          setTimeout(() => {
+              document.getElementById('painelFatura').style.display = 'none';
+              document.getElementById('blocoIniciar').style.display = 'flex';
+              sessaoAtivaId = null;
+              faturaAtualId = null;
+          }, 2500);
+
+      } catch (e) {
+          alert('Erro ao conectar com o servidor.');
+      }
     }
 
     function abrirModalMaxima() {
@@ -677,11 +926,6 @@
 
     function fecharModalMaxima() {
       document.getElementById('modalMaxima').classList.remove('ativo');
-    }
-
-    function confirmarCarregamentoMaximo() {
-      alert('Carregamento iniciado! O veículo será carregado até a capacidade máxima da bateria.');
-      fecharModalMaxima();
     }
 
     const iconeSol = '<path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/>';
