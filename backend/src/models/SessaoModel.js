@@ -20,15 +20,21 @@ class SessaoModel{
     //Transiciona a sessão de 'iniciada' para 'carregando'
     //Retorna {Object} Sessão atualizada, ou null se a transição não for válida
     static async iniciarCarregamento(id, limites = {}) {
-        const { limite_valor = null } = limites;
+        const { limite_valor = null, modo_carga = null } = limites;
+
+        const camposUpdate = ['sessao_status = ?', 'limite_valor = ?', 'atualizada_em = NOW()'];
+        const params = ['carregando', limite_valor];
+
+        if (modo_carga) {
+            camposUpdate.push('modo_carga = ?');
+            params.push(modo_carga);
+        }
+
+        params.push(id);
 
         const [result] = await db.query(
-            `UPDATE Sessoes 
-            SET sessao_status = 'carregando', 
-                limite_valor = ?,
-                atualizada_em = NOW() 
-            WHERE id = ? AND sessao_status = 'iniciada'`,
-            [limite_valor, id]
+            `UPDATE Sessoes SET ${camposUpdate.join(', ')} WHERE id = ? AND sessao_status = 'iniciada'`,
+            params
         );
 
         if (result.affectedRows === 0) return null;

@@ -1,31 +1,8 @@
 const express = require("express");
-const db = require("../db");
 const FaturaModel = require("../models/FaturaModel");
 
 const router = express.Router();
-//feito
-router.post("/criar/pagamento", async (req, res) => {
-    try {
-        const dados = req.body;
 
-        const fatura = await FaturaModel.criar(dados);
-
-        return res.status(201).json({
-            sucesso: true,
-            mensagem: "Fatura criada com sucesso",
-            fatura: fatura
-        });
-
-    } catch (error) {
-        const statusCode = error.message.includes("Já existe") ? 409 : 400;
-
-        return res.status(statusCode).json({
-            sucesso: false,
-            mensagem: error.message
-        });
-    }
-});
-//feito
 router.get("/buscar/:id", async (req, res) => {
     try {
         const { id } = req.params;
@@ -51,7 +28,7 @@ router.get("/buscar/:id", async (req, res) => {
         });
     }
 });
-//feito
+
 router.get("/buscar/sessao/:sessaoId", async (req, res) => {
     try {
         const { sessaoId } = req.params;
@@ -77,7 +54,7 @@ router.get("/buscar/sessao/:sessaoId", async (req, res) => {
         });
     }
 });
-//feito
+
 router.get("/buscar/usuario/:usuarioId", async (req, res) => {
     try {
         const { usuarioId } = req.params;
@@ -100,7 +77,7 @@ router.get("/buscar/usuario/:usuarioId", async (req, res) => {
         });
     }
 });
-//feito
+
 router.get("/pendente", async (req, res) => {
     try {
         const faturas = await FaturaModel.buscarPendentes();
@@ -119,7 +96,7 @@ router.get("/pendente", async (req, res) => {
         });
     }
 });
-//feito
+
 router.get("/pagas", async (req, res) => {
     try {
         const limit = req.query.limit ? parseInt(req.query.limit) : 100;
@@ -141,7 +118,6 @@ router.get("/pagas", async (req, res) => {
     }
 });
 
-//feito
 router.get("/todas", async (req, res) => {
     try {
         const limit = req.query.limit ? parseInt(req.query.limit) : 100;
@@ -164,7 +140,7 @@ router.get("/todas", async (req, res) => {
         });
     }
 });
-//feito
+
 router.patch("/pagar/:id", async (req, res) => {
     try {
         const { id } = req.params;
@@ -200,7 +176,7 @@ router.patch("/pagar/:id", async (req, res) => {
         });
     }
 });
-//feito
+
 router.patch("/cancelar/:id", async (req, res) => {
     try {
         const { id } = req.params;
@@ -225,7 +201,7 @@ router.patch("/cancelar/:id", async (req, res) => {
         });
     }
 });
-//FEITO
+
 router.get('/faturamento', async (req, res) => {
     try {
         const { inicio, fim } = req.query;
@@ -252,7 +228,7 @@ router.get('/faturamento', async (req, res) => {
         });
     }
 });
-//feito
+
 router.get('/faturamento/diario', async (req, res) => {
     try {
 
@@ -274,7 +250,7 @@ router.get('/faturamento/diario', async (req, res) => {
         });
     }
 });
-//feito
+
 router.get('/estatisticas', async (req, res) => {
     try {
         const estatisticas = await FaturaModel.getEstatisticas();
@@ -292,7 +268,7 @@ router.get('/estatisticas', async (req, res) => {
         });
     }
 });
-//feito
+
 router.get('/transacao/:transacaoId', async (req, res) => {
     try {
         const { transacaoId } = req.params;

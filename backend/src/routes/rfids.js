@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const RFIDModel = require("../models/RFIDModel");
 
-//feito
 router.get("/buscar/cartao/:uid", async (req, res) => {
     try {
         const { uid } = req.params;
@@ -20,7 +19,7 @@ router.get("/buscar/cartao/:uid", async (req, res) => {
         });
     }
 });
-//feito
+
 router.get("/listar", async (req, res) => {
     try {
         const { status } = req.query;
@@ -34,7 +33,7 @@ router.get("/listar", async (req, res) => {
         });
     }
 });
-//feito
+
 router.get("/disponiveis", async (req, res) => {
     try {
         const cartoesDisponiveis = await RFIDModel.buscarDisponiveis();
@@ -48,7 +47,6 @@ router.get("/disponiveis", async (req, res) => {
     }
 });
 
-// feito
 router.get("/uso", async (req, res) => {
     try {
         const cartoesEmUso = await RFIDModel.buscarEmUso();
@@ -62,7 +60,6 @@ router.get("/uso", async (req, res) => {
     }
 });
 
-//feito
 router.patch("/status/:uid", async (req, res) => {
     try {
         const { uid } = req.params;
@@ -91,7 +88,6 @@ router.patch("/status/:uid", async (req, res) => {
     }
 });
 
-//feito
 router.patch("/em-uso/:uid", async (req, res) => {
     try {
         const { uid } = req.params;
@@ -114,7 +110,6 @@ router.patch("/em-uso/:uid", async (req, res) => {
     }
 });
 
-//feito
 router.patch("/estoque/:uid", async (req, res) => {
     try {
         const { uid } = req.params;
@@ -137,7 +132,6 @@ router.patch("/estoque/:uid", async (req, res) => {
     }
 });
 
-//feito
 router.patch("/bloquear/:uid", async (req, res) => {
     try {
         const { uid } = req.params;
@@ -160,7 +154,6 @@ router.patch("/bloquear/:uid", async (req, res) => {
     }
 });
 
-//feito
 router.post("/cadastrar", async (req, res) => {
     try {
         const { uid, status } = req.body;
@@ -188,7 +181,6 @@ router.post("/cadastrar", async (req, res) => {
     }
 });
 
-//FEITO
 router.delete("/remover/:uid", async (req, res) => {
     try {
         const { uid } = req.params;

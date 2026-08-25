@@ -1,14 +1,25 @@
 const express = require("express");
-const db = require("../db");
 const SessaoModel = require("../models/SessaoModel");
+const CarregadorModel = require("../models/CarregadorModel");
+const RFIDModel = require("../models/RFIDModel");
+const FaturaModel = require("../models/FaturaModel");
+const {
+    rebalancearPotencias,
+    calcularLimiteContratado,
+    calcularPotenciaMedia,
+    calcularDuracaoHoras,
+    calcularEnergia,
+    calcularTarifa,
+    verificarLimiteAtingido
+} = require("../logic");
 
 console.log("ARQUIVO SESSOES FOI CARREGADO");
+
 const router = express.Router();
 
 router.get("/buscar", async (req, res) => {
     try {
         const sessoes = await SessaoModel.buscarTodasAtivas();
-        console.log(sessoes)
         res.json(sessoes);
 
     } catch (error) {
@@ -22,38 +33,42 @@ router.get("/buscar", async (req, res) => {
 
 router.get("/calcular/demanda", async (req, res) => {
     try {
-        const demanda = await SessaoModel.getDemandaTotal();
+        const demanda_total = await CarregadorModel.getPotenciaTotalAtual();
+        const sessoesAtivas = await SessaoModel.buscarTodasAtivas();
 
-        res.status(200).json(demanda);
-
+        res.status(200).json({
+            demanda_total,
+            qnt_sessoes: sessoesAtivas.length
+        });
     } catch (error) {
         console.error("Erro ao buscar demanda total:", error);
-
-        res.status(500).json({
-            erro: "Erro ao buscar demanda total"
-        });
+        res.status(500).json({ erro: "Erro ao buscar demanda total" });
     }
 });
 
-
 router.post("/criar", async (req, res) => {
     try {
+        const { cartao_rfid_uid, carregador_id } = req.body;
+
+        const carregador = await CarregadorModel.buscarPorId(carregador_id);
+        if (!carregador || carregador.status_modbus !== 'ocioso') {
+            return res.status(409).json({ sucesso: false, erro: "Carregador não está disponível" });
+        }
+
+        const cartao = await RFIDModel.buscarPorUID(cartao_rfid_uid);
+        if (!cartao || cartao.status_cartao_rfid !== 'estoque') {
+            return res.status(409).json({ sucesso: false, erro: "Cartão RFID não está disponível" });
+        }
+
         const sessao = await SessaoModel.criar(req.body);
+        await RFIDModel.marcarComoEmUso(cartao_rfid_uid);
+        await CarregadorModel.atualizarStatus(carregador_id, 'aguardando_inicio_sessao');
 
-        res.status(201).json({
-            sucesso: true,
-            dados: sessao
-        });
-
+        res.status(201).json({ sucesso: true, dados: sessao });
     } catch (error) {
         console.error("Erro ao criar sessão:", error);
-
-        res.status(500).json({
-            sucesso: false,
-            erro: error.message
-        });
+        res.status(500).json({ sucesso: false, erro: error.message });
     }
-
 });
 
 router.get("/busca", async (req, res) => {
@@ -153,14 +168,62 @@ router.patch("/atualizar/potencia/:id", async (req, res) => {
     }
 });
 
+//Função reutilizável para aplicar o rebalanceamento de potências
+async function aplicarRebalanceamento() {
+    const sessoesAtivas = await SessaoModel.buscarTodasAtivas();
+    const demandaAtual = await CarregadorModel.getPotenciaTotalAtual();
+    const potenciaTotalMaxima = await CarregadorModel.getPotenciaTotalMaxima();
+    const limiteContratado = calcularLimiteContratado(potenciaTotalMaxima);
+
+    const resultado = rebalancearPotencias(sessoesAtivas, demandaAtual, limiteContratado);
+
+    for (const ajuste of resultado.ajustes) {
+        await SessaoModel.atualizarPotencia(ajuste.sessao_id, ajuste.potencia_nova);
+        await CarregadorModel.atualizarPotencia(ajuste.carregador_id, ajuste.potencia_nova);
+    }
+
+    return resultado;
+}
+
+router.patch("/iniciar-carregamento/:id", async (req, res) => {
+    try {
+        const id = req.params.id;
+        const { limite_valor, modo_carga } = req.body || {};
+
+        const sessao = await SessaoModel.iniciarCarregamento(id, { limite_valor, modo_carga });
+
+        if (!sessao) {
+            return res.status(409).json({
+                sucesso: false,
+                erro: "Sessão não encontrada ou não está no estado 'iniciada'"
+            });
+        }
+
+        if (sessao.carregador_id) {
+            await CarregadorModel.atualizarStatus(sessao.carregador_id, 'em_uso');
+        }
+
+        const rebalanceamento = await aplicarRebalanceamento();
+
+        res.status(200).json({
+            sucesso: true,
+            mensagem: "Carregamento iniciado",
+            dados: sessao,
+            rebalanceamento
+        });
+
+    } catch (error) {
+        console.error("Erro ao iniciar carregamento:", error);
+        res.status(500).json({ sucesso: false, erro: error.message });
+    }
+});
+
 router.patch("/encerrar/:id", async (req, res) => {
     try {
         const id = req.params.id;
+        const { rfid_uid, carregador_id } = req.body;
 
-        const sessao = await SessaoModel.encerrar(
-            id,
-            req.body
-        );
+        const sessao = await SessaoModel.encerrar(id, req.body);
 
         if (!sessao) {
             return res.status(404).json({
@@ -169,53 +232,96 @@ router.patch("/encerrar/:id", async (req, res) => {
             });
         }
 
-        res.status(200).json({
-            sucesso: true,
-            mensagem: "Sessão encerrada com sucesso",
-            dados: sessao
-        });
+        if (rfid_uid) await RFIDModel.marcarComoDisponivel(rfid_uid);
+        if (carregador_id) await CarregadorModel.atualizarStatusEPotencia(carregador_id, 'ocioso', 0);
 
-    } catch (error) {
-        console.error("Erro ao encerrar sessão:", error);
+        const rebalanceamento = await aplicarRebalanceamento();
 
-        res.status(500).json({
-            sucesso: false,
-            erro: error.message
-        });
-    }
-});
-
-router.patch("/atualizar/status/:id", async (req, res) => {
-    try {
-        const id = req.params.id;
-
-        const sessao = await SessaoModel.atualizarStatus(
-            id,
-            req.body
-        );
-
-        if (!sessao) {
-            return res.status(404).json({
-                sucesso: false,
-                erro: "status nao encontrado"
+        let fatura = null;
+        let erroFatura = null;
+        try {
+            fatura = await FaturaModel.criar({
+                sessao_id: sessao.id,
+                usuario_id: sessao.usuario_id,
+                valor_total: sessao.custo_total,
+                desconto_aplicado: 0
             });
+        } catch (e) {
+            erroFatura = e.message;
+            console.error("Sessão encerrada, mas falha ao gerar fatura:", e);
         }
 
         res.status(200).json({
             sucesso: true,
-            mensagem: "Status atualizado com sucesso",
-            dados: sessao
+            mensagem: "Sessão encerrada com sucesso",
+            dados: sessao,
+            rebalanceamento,
+            fatura,
+            aviso_fatura: erroFatura
         });
-
 
     } catch (error) {
-          console.error("Erro ao atualizar status:", error);
-
-        res.status(500).json({
-            sucesso: false,
-            erro: error.message
-        });
+        console.error("Erro ao encerrar sessão:", error);
+        res.status(500).json({ sucesso: false, erro: error.message });
     }
-})
+});
+
+router.get("/status/:id", async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        const sessao = await SessaoModel.buscarPorId(id);
+
+        if (!sessao) {
+            return res.status(404).json({
+                sucesso: false,
+                erro: "Sessão não encontrada"
+            });
+        }
+
+        if (sessao.sessao_status !== 'carregando') {
+            return res.status(200).json({
+                sucesso: true,
+                dados: sessao,
+                energia_atual: 0,
+                custo_atual: 0,
+                aviso_limite: { atingido: false, tipo: null }
+            });
+        }
+
+        const carregador = await CarregadorModel.buscarPorId(sessao.carregador_id);
+        const potenciaInstantanea = carregador ? carregador.potencia_atual : 0;
+
+        const tempoDecorridoHoras = calcularDuracaoHoras(new Date(sessao.inicio_recarga));
+        const potenciaMedia = calcularPotenciaMedia(
+            sessao.potencia_media,
+            sessao.inicio_recarga,
+            sessao.atualizada_em,
+            potenciaInstantanea
+        );
+        const energiaAtual = calcularEnergia(potenciaMedia, tempoDecorridoHoras);
+
+        const demandaTotal = await CarregadorModel.getPotenciaTotalAtual();
+        const qntSessoes = (await SessaoModel.buscarTodasAtivas()).length;
+
+        const tarifa = calcularTarifa(sessao.modo_carga, new Date().getHours(), demandaTotal, qntSessoes, 0, 30, 0);
+
+        const custoAtual = Math.round(energiaAtual * tarifa * 100) / 100;
+        const limite = verificarLimiteAtingido(custoAtual, sessao.limite_valor);
+
+        res.status(200).json({
+            sucesso: true,
+            dados: sessao,
+            potencia_instantanea: potenciaInstantanea,
+            energia_atual: Math.round(energiaAtual * 1000) / 1000,
+            custo_atual: custoAtual,
+            aviso_limite: limite
+        });
+
+    } catch (error) {
+        console.error("Erro ao consultar status da sessão:", error);
+        res.status(500).json({ sucesso: false, erro: error.message });
+    }
+});
 
 module.exports = router;
