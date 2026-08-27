@@ -1,0 +1,489 @@
+:root {
+    /* Paleta Light (Baseada no Mobile) */
+    --bg-body: #f4f4f4;
+    --bg-header: #ffffff;
+    --bg-card: #ffffff;
+    --text-main: #222222;
+    --text-muted: #4a4a4a;
+    --brand-red: #db3931;
+    --brand-red-hover: #b8221c;
+    --border-color: #dddddd;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    --green-success: #1e7e34;
+    --red-error: #b8221c;
+    --input-bg: #ffffff;
+}
+
+body.dark-mode {
+    /* Paleta Dark (Baseada no Mobile) */
+    --bg-body: #15171b;
+    --bg-header: #1f2228;
+    --bg-card: #1f2228;
+    --text-main: #f0f0f0;
+    --text-muted: #b5b8bd;
+    --brand-red: #e6453d;
+    --brand-red-hover: #db3931;
+    --border-color: #3a3d44;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --green-success: #4cd671;
+    --red-error: #e6453d;
+    --input-bg: #2a2d34;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-body);
+    transition: background 0.3s ease, color 0.3s ease;
+    overflow: hidden;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =========================================
+   CABEÇALHO
+   ========================================= */
+header {
+    width: 100%;
+    height: 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 40px;
+    background-color: var(--bg-header);
+    box-shadow: var(--shadow);
+    z-index: 10;
+    transition: background 0.3s ease;
+}
+
+#logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--brand-red);
+    transition: color 0.3s ease;
+}
+
+#status-sistema {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    /* Espaço para o botão de tema */
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--green-success);
+}
+
+/* Botão Tema Herdado do Mobile */
+.btn-tema {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.btn-tema svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--brand-red);
+}
+
+/* =========================================
+   LAYOUT PRINCIPAL E GRID
+   ========================================= */
+main {
+    width: 100%;
+    height: calc(100vh - 80px);
+    display: flex;
+    justify-content: space-between;
+    padding: 30px 40px;
+    gap: 20px;
+}
+
+#chargers {
+    height: 100%;
+    width: 75%;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* O grid agora é dinâmico, os itens quebram linha automaticamente */
+#chargers-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-content: flex-start;
+}
+
+/* =========================================
+   CARDS DOS CARREGADORES
+   ========================================= */
+.charger-card {
+    flex: 1 1 240px;
+    /* Cresce flexivelmente, mínimo 240px */
+    max-width: 300px;
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    border: 2px solid transparent;
+    animation: fadeIn 0.3s ease;
+    transition: transform 0.2s ease, box-shadow 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+}
+
+.charger-card:hover {
+    transform: translateY(-4px);
+}
+
+.charger-card.inativo {
+    border-color: transparent;
+}
+
+.charger-card.ativo {
+    border-color: var(--brand-red);
+}
+
+.charger-id {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--text-main);
+    margin-bottom: 20px;
+    text-align: center;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.charger-nome,
+.charger-tipo,
+.charger-kw {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.resultado {
+    font-weight: bold;
+    color: var(--text-main);
+    font-size: 0.95rem;
+}
+
+.fim-slot {
+    margin-top: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+}
+
+.charger-status {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.charger-card.inativo .charger-status {
+    color: var(--text-muted);
+}
+
+.charger-card.ativo .charger-status {
+    color: var(--brand-red);
+}
+
+/* Botões baseados no Mobile */
+.btn-iniciar,
+.btn-encerrar {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    font-size: 1rem;
+}
+
+.btn-iniciar:active,
+.btn-encerrar:active {
+    transform: scale(0.96);
+}
+
+.btn-iniciar {
+    background: var(--brand-red);
+    color: white;
+}
+
+.btn-iniciar:hover {
+    background: var(--brand-red-hover);
+}
+
+.btn-iniciar:disabled {
+    background: var(--border-color);
+    color: var(--text-muted);
+    cursor: not-allowed;
+}
+
+.btn-encerrar {
+    background: var(--bg-body);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+}
+
+.btn-encerrar:hover {
+    background: var(--border-color);
+}
+
+/* =========================================
+   DASHBOARD LATERAL (Métricas e Log)
+   ========================================= */
+#dashboard {
+    height: 100%;
+    width: 25%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+#metricas {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#metricas>div {
+    background: var(--bg-card);
+    padding: 18px;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.3s ease;
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: bold;
+}
+
+.metric-value {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: var(--brand-red);
+}
+
+#ocpp-log {
+    flex: 1;
+    background: var(--input-bg);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    overflow-y: auto;
+    font-family: "Courier New", monospace;
+    font-size: 0.75rem;
+    transition: background 0.3s ease;
+}
+
+.ocpp-entry {
+    margin-bottom: 8px;
+    line-height: 1.5;
+    display: flex;
+    gap: 10px;
+}
+
+.ocpp-ts {
+    color: var(--text-muted);
+    opacity: 0.6;
+    min-width: 40px;
+}
+
+.ocpp-entry.info .ocpp-msg {
+    color: #4ca3f5;
+}
+
+.ocpp-entry.warn .ocpp-msg {
+    color: #b9b73f;
+}
+
+.ocpp-entry.error .ocpp-msg {
+    color: var(--red-error);
+}
+
+/* =========================================
+   MODAIS (Efeito Blur e Cards arredondados)
+   ========================================= */
+#modal-nova-sessao,
+#modal-relatorio {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(3px);
+    /* Efeito de vidro do mobile */
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+#modal-nova-sessao.aberto,
+#modal-relatorio.aberto {
+    display: flex;
+    animation: fadeIn 0.2s ease;
+}
+
+#modal-conteudo,
+#modal-relatorio-conteudo {
+    background: var(--bg-card);
+    width: 420px;
+    max-width: 90%;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    transition: background 0.3s ease;
+}
+
+#modal-conteudo h2,
+#modal-relatorio-conteudo h2 {
+    color: var(--text-main);
+    font-size: 1.4rem;
+    margin-bottom: 24px;
+}
+
+/* Formulário do Modal */
+.form-input {
+    margin-bottom: 16px;
+    text-align: left;
+    width: 100%;
+}
+
+.form-input label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+
+.form-input input,
+.form-input select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 1rem;
+    background: var(--input-bg);
+    color: var(--text-main);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.form-input input:focus,
+.form-input select:focus {
+    border-color: var(--brand-red);
+}
+
+#form-botoes {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+#btn-iniciar {
+    flex: 1;
+    background: var(--brand-red);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+#btn-cancelar {
+    flex: 1;
+    background: var(--bg-body);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+#btn-iniciar:hover {
+    background: var(--brand-red-hover);
+}
+
+#btn-cancelar:hover {
+    background: var(--border-color);
+}
+
+#modal-erro {
+    color: var(--red-error);
+    font-weight: bold;
+    margin-top: 10px;
+    font-size: 0.9rem;
+}
+
+/* Relatório Modal Textos */
+#modal-relatorio-conteudo p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-bottom: 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+}
+
+#modal-relatorio-conteudo button {
+    width: 100%;
+    background: var(--brand-red);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: 0.2s;
+}
+
+#modal-relatorio-conteudo button:hover {
+    background: var(--brand-red-hover);
+}

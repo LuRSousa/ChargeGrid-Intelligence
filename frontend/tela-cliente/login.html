@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoodWe - Login</title>
+<link rel="stylesheet" href="./style/style-login.css">
+</head>
+<body>
+  <div class="splash">
+    <div class="goodwe">
+      <img src="https://br.goodwe.com/Public/Uploads/uploadfile/images/20220325/logo3.svg" alt="GoodWe logo">
+    </div>
+
+    <div class="login-card">
+      <h2>Entrar</h2>
+      <form>
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" placeholder="seu@email.com" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Senha</label>
+          <input type="password" id="password" placeholder="Digite sua senha" required>
+        </div>
+        <button type="submit" class="btn-submit" onclick="return fazerLogin(event)">Acessar</button>
+      </form>
+
+      <div id="mensagemLogin" class="mensagem-inline"></div>
+
+      <div class="login-links">
+        <button type="button" class="link-btn" onclick="mostrarRecuperar()">Esqueceu a senha?</button>
+        <span class="divider-x">&nbsp;|&nbsp;</span>
+        <button type="button" class="link-btn" onclick="mostrarCadastro()">Criar conta</button>
+      </div>
+    </div>
+
+    <div class="register-card" id="registerCard">
+      <h2>Criar Conta</h2>
+      <form onsubmit="return false;">
+        <div class="form-group">
+          <label for="nomeCompleto">Nome completo</label>
+          <input type="text" id="nomeCompleto" placeholder="Seu nome completo" required>
+        </div>
+        <div class="form-group">
+          <label for="emailCadastro">E-mail</label>
+          <input type="email" id="emailCadastro" placeholder="seu@email.com" required>
+        </div>
+
+        <div class="form-group">
+          <label for="senhaCadastro">Senha</label>
+          <input type="password" id="senhaCadastro" placeholder="Digite sua senha" required>
+        </div>
+        <div class="form-group">
+          <label for="confirmarSenhaCadastro">Confirmar senha</label>
+          <input type="password" id="confirmarSenhaCadastro" placeholder="Repita sua senha" required>
+        </div>
+
+        <div class="operador-group">
+          <label class="titulo">Você é um operador?</label>
+          <div class="operador-opcoes">
+            <input type="radio" name="operador" id="operadorSim" value="sim">
+            <label class="opcao" for="operadorSim">Sim</label>
+
+            <input type="radio" name="operador" id="operadorNao" value="nao" checked>
+            <label class="opcao" for="operadorNao">Não</label>
+          </div>
+        </div>
+
+        <div id="mensagemCadastro" class="mensagem-inline"></div>
+
+        <button type="submit" class="btn-submit" onclick="return fazerCadastro(event)">Cadastrar</button>
+        <button type="button" class="btn-voltar" onclick="mostrarLogin()">Voltar</button>
+      </form>
+    </div>
+
+    <div class="recover-card" id="recoverCard">
+      <h2>Recuperar Senha</h2>
+
+      <div id="recoverForm">
+        <p class="recover-texto">Digite o e-mail cadastrado na sua conta para receber uma nova senha.</p>
+        <form onsubmit="return false;">
+          <div class="form-group">
+            <label for="emailRecuperar">E-mail</label>
+            <input type="email" id="emailRecuperar" placeholder="seu@email.com" required>
+          </div>
+          <div id="mensagemRecuperar" class="mensagem-inline"></div>
+          <button type="submit" class="btn-submit" onclick="return enviarRecuperacao(event)">Enviar</button>
+          <button type="button" class="btn-voltar" onclick="mostrarLogin()">Voltar</button>
+        </form>
+      </div>
+
+      <div class="recover-mensagem" id="recoverMensagem">
+        <div class="icone-ok">&#10003;</div>
+        <p>Sua senha foi enviada para o e-mail <strong id="emailEnviadoTexto"></strong>. Verifique sua caixa de entrada.</p>
+        <button type="button" class="btn-submit" onclick="mostrarLogin()">Voltar para o login</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./script/script-login.js"></script>
+</body>
+</html>

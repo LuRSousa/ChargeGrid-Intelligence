@@ -6,455 +6,7 @@
 <title>GoodWe</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-<style>
-  * {
-    box-sizing: border-box;
-  }
-
-  html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-    background: #f4f4f4;
-    font-family: Arial, sans-serif;
-    transition: background 0.3s ease, color 0.3s ease;
-  }
-
-  body.dark-mode {
-    background: #15171b;
-  }
-
-  /* Áreas de Conteúdo */
-  .conteudo {
-    padding: 20px 20px 120px 20px;
-    text-align: center;
-    height: 100%;
-    overflow-y: auto;
-  }
-
-  .aba-conteudo {
-    display: none;
-    animation: fadeIn 0.3s ease;
-  }
-
-  .aba-conteudo.ativa {
-    display: block;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-
-  .titulo-secao {
-    color: #222222;
-    transition: color 0.3s ease;
-  }
-
-  .texto-secao {
-    color: #4a4a4a;
-    transition: color 0.3s ease;
-  }
-
-  body.dark-mode .titulo-secao {
-    color: #f0f0f0;
-  }
-
-  body.dark-mode .texto-secao {
-    color: #b5b8bd;
-  }
-
-  .topo-app {
-    max-width: 380px;
-    margin: 0 auto 10px auto;
-    padding-top: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-  }
-
-  .btn-tema {
-    position: absolute;
-    right: 0;
-    top: 6px;
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    border: 1px solid #dddddd;
-    background: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    transition: background 0.3s ease, border-color 0.3s ease;
-  }
-
-  .btn-tema svg {
-    width: 20px;
-    height: 20px;
-    fill: #db3931;
-  }
-
-  body.dark-mode .btn-tema {
-    background: #22252b;
-    border-color: #3a3d44;
-  }
-
-  body.dark-mode .btn-tema svg {
-    fill: #e6453d;
-  }
-
-  .mapa-card {
-    max-width: 380px;
-    margin: 15px auto 0 auto;
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-    transition: background 0.3s ease, box-shadow 0.3s ease;
-  }
-
-  body.dark-mode .mapa-card {
-    background: #1f2228;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  }
-
-  .mapa-card h2 {
-    font-size: 0.95rem;
-    color: #db3931;
-    margin: 0 0 8px 0;
-    text-align: left;
-    padding-left: 4px;
-    font-weight: bold;
-  }
-
-  body.dark-mode .mapa-card h2 {
-    color: #e6453d;
-  }
-
-  #mapa {
-    width: 100%;
-    height: 250px;
-    max-height: 250px;
-    border-radius: 10px;
-    z-index: 1;
-  }
-
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.55);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
-    backdrop-filter: blur(3px);
-  }
-
-  .modal-overlay.ativo {
-    display: flex;
-    animation: fadeIn 0.2s ease;
-  }
-
-  .modal-card {
-    background: #ffffff;
-    width: 340px;
-    max-width: 90%;
-    padding: 24px;
-    border-radius: 20px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
-    text-align: center;
-    transition: background 0.3s ease;
-  }
-
-  body.dark-mode .modal-card {
-    background: #1f2228;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-  }
-
-  .modal-card h3 {
-    margin-top: 0;
-    color: #333;
-    font-size: 1.2rem;
-    margin-bottom: 20px;
-  }
-
-  body.dark-mode .modal-card h3 {
-    color: #f0f0f0;
-  }
-
-  body.dark-mode .modal-card p {
-    color: #b5b8bd !important;
-  }
-
-  .form-group {
-    margin-bottom: 16px;
-    text-align: left;
-  }
-
-  .form-group label {
-    display: block;
-    font-size: 0.85rem;
-    color: #555;
-    margin-bottom: 6px;
-    font-weight: bold;
-  }
-
-  body.dark-mode .form-group label {
-    color: #cfd2d7;
-  }
-
-  .form-group input {
-    width: 100%;
-    padding: 10px 14px;
-    border: 1px solid #ccc;
-    border-radius: 12px;
-    font-size: 1rem;
-    outline: none;
-    transition: border-color 0.2s, background 0.3s ease, color 0.3s ease;
-  }
-
-  body.dark-mode .form-group input {
-    background: #2a2d34;
-    border-color: #3a3d44;
-    color: #f0f0f0;
-  }
-
-  .form-group input:focus {
-    border-color: #db3931;
-  }
-
-  body.dark-mode .form-group input:focus {
-    border-color: #e6453d;
-  }
-  .modo-carregamento {
-    margin-bottom: 18px;
-    text-align: left;
-  }
-
-  .modo-carregamento label.titulo-modo {
-    display: block;
-    font-size: 0.85rem;
-    color: #555;
-    margin-bottom: 8px;
-    font-weight: bold;
-  }
-
-  body.dark-mode .modo-carregamento label.titulo-modo {
-    color: #cfd2d7;
-  }
-
-  .modo-opcoes {
-    display: flex;
-    gap: 8px;
-  }
-
-  .modo-opcao {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 6px;
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    background: #f7f7f7;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .modo-opcao svg {
-    width: 22px;
-    height: 22px;
-    fill: #888;
-    transition: fill 0.2s ease;
-  }
-
-  .modo-opcao span {
-    font-size: 0.72rem;
-    color: #666;
-    font-weight: bold;
-    text-align: center;
-  }
-
-  .modo-opcao.selecionado {
-    background: #fdeceb;
-    border-color: #db3931;
-  }
-
-  .modo-opcao.selecionado svg {
-    fill: #db3931;
-  }
-
-  .modo-opcao.selecionado span {
-    color: #db3931;
-  }
-
-  body.dark-mode .modo-opcao {
-    background: #2a2d34;
-    border-color: #3a3d44;
-  }
-
-  body.dark-mode .modo-opcao svg {
-    fill: #8b8e94;
-  }
-
-  body.dark-mode .modo-opcao span {
-    color: #8b8e94;
-  }
-
-  body.dark-mode .modo-opcao.selecionado {
-    background: rgba(230, 69, 61, 0.15);
-    border-color: #e6453d;
-  }
-
-  body.dark-mode .modo-opcao.selecionado svg {
-    fill: #e6453d;
-  }
-
-  body.dark-mode .modo-opcao.selecionado span {
-    color: #e6453d;
-  }
-
-  .tarifa-info {
-    font-size: 0.75rem;
-    color: #777;
-    margin-bottom: 20px;
-    display: block;
-  }
-
-  body.dark-mode .tarifa-info {
-    color: #8b8e94;
-  }
-
-  .modal-acoes {
-    display: flex;
-    gap: 10px;
-  }
-
-  .btn-confirmar {
-    flex: 1;
-    background: #db3931;
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 12px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-
-  .btn-confirmar:hover {
-    background: #b8221c;
-  }
-
-  .btn-cancelar {
-    flex: 1;
-    background: #e0e0e0;
-    color: #333;
-    border: none;
-    padding: 12px;
-    border-radius: 12px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-
-  .btn-cancelar:hover {
-    background: #d0d0d0;
-  }
-
-  body.dark-mode .btn-cancelar {
-    background: #33363c;
-    color: #e6e6e6;
-  }
-
-  body.dark-mode .btn-cancelar:hover {
-    background: #3d4046;
-  }
-
-  .quadrado {
-    position: fixed;        
-    bottom: 30px;           
-    left: 50%;              
-    transform: translateX(-50%);
-    width: 550px;
-    max-width: 90%;
-    height: 60px;
-    background: linear-gradient(180deg, #db3931 0%, #f71612 100%);
-    border-radius: 35px;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 0 20px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
-    z-index: 1000;
-    transition: background 0.3s ease;
-  }
-
-  body.dark-mode .quadrado {
-    background: #1f2228;
-    border: 1px solid #33363c;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-  }
-
-  .btn-menu {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: rgba(255, 255, 255, 0.75);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px;
-    border-radius: 50%;
-    transition: all 0.3s ease;
-  }
-
-  body.dark-mode .btn-menu {
-    color: #8b8e94;
-  }
-
-  .btn-menu svg {
-    width: 28px;
-    height: 28px;
-    fill: currentColor;
-  }
-
-  .btn-menu.ativo {
-    color: #db3931;
-    background-color: #ffffff;
-    transform: scale(1.1);
-  }
-
-  body.dark-mode .btn-menu.ativo {
-    color: #ffffff;
-    background-color: #db3931;
-  }
-
-  .btn-menu:hover {
-    color: #ffffff;
-  }
-
-  body.dark-mode .btn-menu:hover {
-    color: #e6453d;
-  }
-  body.dark-mode .btn-personalizar {
-    background: transparent !important;
-    border-color: #e6453d !important;
-    color: #e6453d !important;
-  }
-</style>
-
+<link rel="stylesheet" href="./style/style-menu.css">
 </head>
 
 <body>
@@ -482,15 +34,21 @@
 
     <section id="carro" class="aba-conteudo">
       <h1 class="titulo-secao">Carregamento do Veículo</h1>
-      <p class="texto-secao">Status atual: Sessão não vinculada</p>
+      <p class="texto-secao" id="statusTexto">Status atual: Sessão não vinculada</p>
+      <div id="mensagemCarro" class="mensagem-inline"></div>
 
+      <!-- Etapa 1: identificar a sessão pelo cartão RFID -->
       <div id="vincularRFID" class="form-group" style="max-width: 300px; margin: 0 auto 16px;">
-          <label for="inputRfid">Cartão RFID</label>
-          <input type="text" id="inputRfid" placeholder="Digite o UID do cartão">
-          <button onclick="buscarSessaoAtiva()" style="margin-top:8px; width:100%;">Identificar sessão</button>
+        <label for="inputRfid">Cartão RFID</label>
+        <input type="text" id="inputRfid" placeholder="Simule a aproximação: digite o UID do cartão">
+        <small style="display:block; margin-top:4px; color:#888; font-size:0.75rem;">
+          Em produção, esta etapa acontece automaticamente por aproximação física
+        </small>
+        <button onclick="buscarSessaoAtiva()" style="margin-top:8px; width:100%;">Identificar sessão</button>
       </div>
-      
-      <div id="iniciarCarregamento" style="display: none; flex-direction: column; gap: 12px; max-width: 300px; margin: 20px auto 0 auto;">
+
+      <!-- Etapa 2: escolher como iniciar o carregamento -->
+      <div id="blocoAcoesIniciais" style="display: none; flex-direction: column; gap: 12px; max-width: 300px; margin: 20px auto 0 auto;">
         <button onclick="abrirModalMaxima()" style="padding: 14px 28px; font-size: 16px; border-radius: 20px; border: none; background: #db3931; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
           Iniciar Carregamento
         </button>
@@ -500,6 +58,7 @@
         </button>
       </div>
 
+      <!-- Etapa 3: acompanhamento da sessão ativa -->
       <div id="painelAcompanhamento" style="display:none; max-width:320px; margin:20px auto 0;">
         <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 4px 12px rgba(0,0,0,0.12); text-align:left;">
           <p class="texto-secao"><strong>Status:</strong> <span id="infoStatus">-</span></p>
@@ -520,6 +79,7 @@
         </div>
       </div>
 
+      <!-- Etapa 4: fatura — IRMÃ de painelAcompanhamento, não filha -->
       <div id="painelFatura" style="display:none; max-width:320px; margin:20px auto 0;">
         <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 4px 12px rgba(0,0,0,0.12); text-align:left;">
           <h3 style="margin-top:0; color:#db3931;">Resumo da recarga</h3>
@@ -531,6 +91,9 @@
           <p class="texto-secao" id="faturaStatus" style="font-weight:bold;">Status: -</p>
         </div>
 
+        <small style="display:block; text-align:center; margin-top:8px; color:#888; font-size:0.75rem;">
+          Simulação do gateway de pagamento — a confirmação já atualiza o sistema real
+        </small>
         <button id="btnPagarFatura" onclick="pagarFaturaAtual()" style="width:100%; margin-top:16px; padding:14px; font-size:16px; border-radius:20px; border:none; background:#db3931; color:#fff; font-weight:bold; cursor:pointer;">
           Pagar agora
         </button>
@@ -541,6 +104,12 @@
       <h1 class="titulo-secao">Meu Perfil</h1>
       <p class="texto-secao"><strong>Usuário:</strong> <span id="perfilNome">-</span></p>
       <p class="texto-secao"><strong>E-mail:</strong> <span id="perfilEmail">-</span></p>
+      <p class="texto-secao"><strong>Tipo de Conta:</strong> <span id="perfilTipo">-</span></p>
+      <p class="texto-secao"><strong>Plano:</strong> <span id="perfilPlano">-</span></p>
+
+      <button onclick="fazerLogout()" style="margin-top:20px; padding:12px 24px; border-radius:20px; border:2px solid #db3931; background:#fff; color:#db3931; font-weight:bold; cursor:pointer;">
+        Sair da conta
+      </button>
     </section>
   </main>
 
@@ -548,7 +117,7 @@
     <div class="modal-card">
       <h3>Personalizar Carga</h3>
 
-        <div class="modo-carregamento">
+      <div class="modo-carregamento">
         <label class="titulo-modo">Modo de Carregamento</label>
         <div class="modo-opcoes" id="modoOpcoes">
           <div class="modo-opcao selecionado" data-modo="rapido" onclick="selecionarModo('rapido', this)">
@@ -562,16 +131,16 @@
           <div class="modo-opcao" data-modo="FV_baterias" onclick="selecionarModo('FV_baterias', this)">
             <svg viewBox="0 0 24 24"><path d="M16.67 4H15V2h-6v2H7.33C6.6 4 6 4.6 6 5.33v15.33C6 21.4 6.6 22 7.33 22h9.33c.74 0 1.34-.6 1.34-1.33V5.33C18 4.6 17.4 4 16.67 4z"/></svg>
             <span>FV + Baterias</span>
-
           </div>
         </div>
       </div>
+
       <div class="form-group">
         <label for="inputValor">Quanto vai pagar (R$):</label>
         <input type="number" id="inputValor" placeholder="Ex: 50.00" min="0" step="1" oninput="atualizarPorValor()">
       </div>
 
-      <span class="tarifa-info" id="valorEmKwh">*Tarifa estimativa: R$ 2,50 por kWh</span>
+      <div id="mensagemModal" class="mensagem-inline"></div>
 
       <div class="modal-acoes">
         <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
@@ -586,6 +155,7 @@
       <p style="color: #555; font-size: 0.92rem; line-height: 1.5; margin-bottom: 20px;">
         O veículo será carregado até a <strong>capacidade máxima da bateria</strong>. Deseja continuar?
       </p>
+      <div id="mensagemModalMaxima" class="mensagem-inline"></div>
 
       <div class="modal-acoes">
         <button class="btn-cancelar" onclick="fecharModalMaxima()">Cancelar</button>
@@ -617,351 +187,7 @@
   </nav>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <script>
-    let map = null;
-    const TARIFA_POR_KWH = 2.50;
-
-    function inicializarMapa() {
-      if (map !== null) return;
-
-      const lat = -23.561684;
-      const lng = -46.655981;
-
-      map = L.map('mapa').setView([lat, lng], 14);
-
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap'
-      }).addTo(map);
-
-      const postos = [
-        { nome: "Posto GoodWe - Paulista", lat: -23.561684, lng: -46.655981, status: "Disponível" },
-        { nome: "Posto Parceiro A", lat: -23.555500, lng: -46.660000, status: "Disponível" },
-        { nome: "Posto Parceiro B", lat: -23.568000, lng: -46.665000, status: "Ocupado" }
-      ];
-
-      postos.forEach(posto => {
-        L.marker([posto.lat, posto.lng])
-          .addTo(map)
-          .bindPopup(`<b>${posto.nome}</b><br>${posto.status}`);
-      });
-    }
-
-    async function carregarPerfil() {
-      const usuarioId = localStorage.getItem('usuarioId');
-      if (!usuarioId) {
-          document.getElementById('perfilNome').textContent = 'Não autenticado';
-          return;
-      }
-
-      try {
-          const resp = await fetch(`http://localhost:3000/api/usuario/${usuarioId}`);
-          const usuario = await resp.json();
-
-          document.getElementById('perfilNome').textContent = usuario.nome;
-          document.getElementById('perfilEmail').textContent = usuario.email;
-      } catch (e) {
-          document.getElementById('perfilNome').textContent = 'Erro ao carregar';
-      }
-    }
-
-    window.onload = function() {
-      inicializarMapa();
-      carregarPerfil();
-    };
-
-    function trocarAba(idAba, elementoBotao) {
-      const abas = document.querySelectorAll('.aba-conteudo');
-      abas.forEach(aba => aba.classList.remove('ativa'));
-
-      const botoes = document.querySelectorAll('.btn-menu');
-      botoes.forEach(btn => btn.classList.remove('ativo'));
-
-      document.getElementById(idAba).classList.add('ativa');
-      elementoBotao.classList.add('ativo');
-
-      if (idAba === 'home' && map) {
-        setTimeout(() => map.invalidateSize(), 200);
-      }
-    }
-
-    let sessaoAtivaId = null;
-    let carregadorAtivoId = null;
-
-    async function buscarSessaoAtiva() {
-      const uid = document.getElementById('inputRfid').value.trim();
-      const telaRFID = document.getElementById('vincularRFID');
-      const telaCarregamento = document.getElementById('iniciarCarregamento');
-      const textoSecao = document.querySelector('#carro .texto-secao');
-      if (!uid) { alert('Digite o UID do cartão'); return; }
-
-      try {
-          const resp = await fetch(`http://localhost:3000/api/sessoes/ativa?id=${encodeURIComponent(uid)}`);
-          const dados = await resp.json();
-
-          if (!dados.sucesso) {
-              alert(dados.erro || 'Nenhuma sessão ativa encontrada para este cartão.');
-              return;
-          }
-
-          sessaoAtivaId = dados.dados.id;
-          carregadorAtivoId = dados.dados.carregador_id;
-          localStorage.setItem('sessaoAtivaId', sessaoAtivaId);
-          localStorage.setItem('carregadorAtivoId', carregadorAtivoId);
-          alert(`Sessão ${sessaoAtivaId} identificada!`);
-          telaRFID.style.display = 'none';
-          telaCarregamento.style.display = 'flex';
-          textoSecao.textContent = 'Status atual: Sessão vinculada';
-      } catch (e) {
-          alert('Erro ao conectar com o servidor.');
-      }
-    }
-
-    function abrirModal() {
-      document.getElementById('modalCarregamento').classList.add('ativo');
-    }
-
-    let modoSelecionado = 'rapido';
-
-    function selecionarModo(modo, elemento) {
-      modoSelecionado = modo;
-      document.querySelectorAll('.modo-opcao').forEach(op => op.classList.remove('selecionado'));
-      elemento.classList.add('selecionado');
-    }
-
-    function fecharModal() {
-      document.getElementById('modalCarregamento').classList.remove('ativo');
-      document.getElementById('inputValor').value = '';
-      document.getElementById('valorEmKwh').textContent = '*Tarifa estimativa: R$ 2,50 por kWh';
-      document.querySelectorAll('.modo-opcao').forEach(op => op.classList.remove('selecionado'));
-      document.querySelector('.modo-opcao[data-modo="rapido"]').classList.add('selecionado');
-      modoSelecionado = 'rapido';
-    }
-
-    function atualizarPorValor() {
-      const valorInput = document.getElementById('inputValor');
-      const valor = parseFloat(valorInput.value);
-
-      if (!isNaN(valor) && valor >= 0) {
-        const kwhEquivalente = (valor / TARIFA_POR_KWH).toFixed(1);
-        document.getElementById('valorEmKwh')
-      } else {
-        document.getElementById('valorEmKwh').textContent = '*Tarifa estimativa: R$ 2,50 por kWh';
-      }
-    }
-
-    async function confirmarCarregamento() {
-      const iniciarCarregamento = document.getElementById('iniciarCarregamento');
-      const painelAcompanhamento = document.getElementById('painelAcompanhamento');
-      const textoSecao = document.querySelector('#carro .texto-secao');
-      if (!sessaoAtivaId) { alert('Identifique a sessão pelo cartão primeiro.'); return; }
-
-      const valor = parseFloat(document.getElementById('inputValor').value);
-      if (!valor || valor <= 0) {
-          alert('Informe um valor válido.');
-          return;
-      }
-
-      // Mapeamento direto: alinhar os data-modo do HTML com o enum do banco
-      // evita essa tradução no meio do caminho (ver observação abaixo)
-      const resp = await fetch(`http://localhost:3000/api/sessoes/iniciar-carregamento/${sessaoAtivaId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ limite_valor: valor, modo_carga: modoSelecionado })
-      });
-      const dados = await resp.json();
-
-      if (!dados.sucesso) {
-          alert(dados.erro);
-          return;
-      }
-
-      iniciarCarregamento.style.display = 'none';
-      painelAcompanhamento.style.display = 'flex';
-      textoSecao.textContent = 'Status atual: Sessão iniciada';
-      alert('Carregamento iniciado com sucesso!');
-      fecharModal();
-      atualizarStatusSessao();
-    }
-
-    async function confirmarCarregamentoMaximo() {
-      const iniciarCarregamento = document.getElementById('iniciarCarregamento');
-      const painelAcompanhamento = document.getElementById('painelAcompanhamento');
-      const textoSecao = document.querySelector('#carro .texto-secao');
-      if (!sessaoAtivaId) { alert('Identifique a sessão pelo cartão primeiro.'); return; }
-
-      const resp = await fetch(`http://localhost:3000/api/sessoes/iniciar-carregamento/${sessaoAtivaId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({}) // sem limite_valor — carrega até completar
-      });
-      const dados = await resp.json();
-
-      if (!dados.sucesso) { alert(dados.erro); return; }
-
-      iniciarCarregamento.style.display = 'none';
-      painelAcompanhamento.style.display = 'flex';
-      textoSecao.textContent = 'Status atual: Sessão iniciada';
-      alert('Carregamento iniciado! Até a capacidade máxima da bateria.');
-      fecharModalMaxima();
-      atualizarStatusSessao();
-    }
-
-    async function atualizarStatusSessao() {
-      if (!sessaoAtivaId) return;
-
-      try {
-          const resp = await fetch(`http://localhost:3000/api/sessoes/status/${sessaoAtivaId}`);
-          const dados = await resp.json();
-
-          if (!dados.sucesso) {
-              alert(dados.erro || 'Erro ao buscar status da sessão.');
-              return;
-          }
-
-          const nomesModo = { rapido: 'Rápido', FV: 'Prioridade Solar', FV_baterias: 'Solar + Bateria' };
-
-          document.getElementById('infoStatus').textContent = dados.dados.sessao_status;
-          document.getElementById('infoModo').textContent = nomesModo[dados.dados.modo_carga] || dados.dados.modo_carga;
-          document.getElementById('infoPotencia').textContent = (dados.potencia_instantanea ?? 0).toFixed(2);
-          document.getElementById('infoEnergia').textContent = (dados.energia_atual ?? 0).toFixed(3);
-          document.getElementById('infoCusto').textContent = (dados.custo_atual ?? 0).toFixed(2);
-
-          const avisoEl = document.getElementById('infoAvisoLimite');
-          if (dados.aviso_limite && dados.aviso_limite.atingido) {
-              avisoEl.textContent = '⚠️ Você atingiu o limite definido!';
-              avisoEl.style.display = 'block';
-          } else {
-              avisoEl.style.display = 'none';
-          }
-
-      } catch (e) {
-          alert('Erro ao conectar com o servidor.');
-      }
-    }
-
-    let faturaAtualId = null;
-
-    async function encerrarSessaoAtiva() {
-      if (!sessaoAtivaId) return;
-      if (!confirm('Deseja realmente encerrar o carregamento?')) return;
-
-      const energia = parseFloat(document.getElementById('infoEnergia').textContent) || 0;
-      const custo = parseFloat(document.getElementById('infoCusto').textContent) || 0;
-
-      try {
-          const resp = await fetch(`http://localhost:3000/api/sessoes/encerrar/${sessaoAtivaId}`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                  rfid_uid: document.getElementById('inputRfid').value.trim(),
-                  carregador_id: carregadorAtivoId,
-                  duracao_minutos: 0,
-                  energia_kwh: energia,
-                  tarifa_aplicada: 0,
-                  custo_total: custo
-              })
-          });
-          const dados = await resp.json();
-
-          if (!dados.sucesso) { alert(dados.erro); return; }
-
-          mostrarTelaFatura(dados.fatura); // troca o alert por uma tela de verdade
-
-      } catch (e) {
-          alert('Erro ao conectar com o servidor.');
-      }
-    }
-
-    function mostrarTelaFatura(fatura) {
-      faturaAtualId = fatura.id;
-
-      document.getElementById('painelAcompanhamento').style.display = 'none';
-      document.getElementById('painelFatura').style.display = 'flex';
-
-      document.getElementById('faturaEnergia').textContent = fatura.energia_kwh ?? '-';
-      document.getElementById('faturaDuracao').textContent = fatura.duracao_minutos ?? '-';
-      document.getElementById('faturaValor').textContent = Number(fatura.valor_total).toFixed(2);
-      document.getElementById('faturaStatus').textContent = `Status: ${fatura.status_pagamento}`;
-    }
-
-    async function pagarFaturaAtual() {
-      if (!faturaAtualId) return;
-
-      try {
-          const resp = await fetch(`http://localhost:3000/api/pagamento/pagar/${faturaAtualId}`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                  metodo_pagamento: 'pix',
-                  transacao_externa_id: 'TESTE-PWA-' + Date.now()
-              })
-          });
-          const dados = await resp.json();
-
-          if (!dados.sucesso) { alert(dados.mensagem); return; }
-
-          document.getElementById('faturaStatus').textContent = `Status: ${dados.fatura.status_pagamento}`;
-          document.getElementById('btnPagarFatura').textContent = 'Pago ✓';
-          document.getElementById('btnPagarFatura').disabled = true;
-          document.getElementById('btnPagarFatura').style.opacity = '0.6';
-          document.getElementById('btnPagarFatura').style.cursor = 'default';
-
-          // Depois de alguns segundos, volta para a tela inicial de carregamento
-          setTimeout(() => {
-              document.getElementById('painelFatura').style.display = 'none';
-              document.getElementById('blocoIniciar').style.display = 'flex';
-              sessaoAtivaId = null;
-              faturaAtualId = null;
-          }, 2500);
-
-      } catch (e) {
-          alert('Erro ao conectar com o servidor.');
-      }
-    }
-
-    function abrirModalMaxima() {
-      document.getElementById('modalMaxima').classList.add('ativo');
-    }
-
-    function fecharModalMaxima() {
-      document.getElementById('modalMaxima').classList.remove('ativo');
-    }
-
-    const iconeSol = '<path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/>';
-    const iconeLua = '<path d="M12 7c0-1.77.72-3.37 1.88-4.53A9.994 9.994 0 0 0 2 12c0 5.52 4.48 10 10 10a9.994 9.994 0 0 0 9.53-6.88A7 7 0 0 1 12 7z"/><circle cx="6.5" cy="8.5" r="0.8"/><circle cx="9" cy="14" r="0.6"/><circle cx="15" cy="16" r="0.7"/>';
-
-    function aplicarTema(tema) {
-      const icone = document.getElementById('iconeTema');
-      if (tema === 'dark') {
-        document.body.classList.add('dark-mode');
-        icone.innerHTML = iconeLua;
-      } else {
-        document.body.classList.remove('dark-mode');
-        icone.innerHTML = iconeSol;
-      }
-    }
-
-    function alternarTema() {
-      const escuroAtivo = document.body.classList.contains('dark-mode');
-      const novoTema = escuroAtivo ? 'light' : 'dark';
-      aplicarTema(novoTema);
-      try {
-        localStorage.setItem('goodwe-tema', novoTema);
-      } catch (e) {
-      }
-    }
-
-    (function iniciarTema() {
-      let temaSalvo = 'light';
-      try {
-        temaSalvo = localStorage.getItem('goodwe-tema') || 'light';
-      } catch (e) {
-        temaSalvo = 'light';
-      }
-      aplicarTema(temaSalvo);
-    })();
-  </script>
+  <script src="./script/script-menu.js"></script>
 
 </body>
 </html>
