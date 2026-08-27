@@ -283,6 +283,7 @@ router.get("/status/:id", async (req, res) => {
             return res.status(200).json({
                 sucesso: true,
                 dados: sessao,
+                potencia_instantanea: 0,
                 energia_atual: 0,
                 custo_atual: 0,
                 aviso_limite: { atingido: false, tipo: null }
@@ -314,6 +315,7 @@ router.get("/status/:id", async (req, res) => {
             dados: sessao,
             potencia_instantanea: potenciaInstantanea,
             energia_atual: Math.round(energiaAtual * 1000) / 1000,
+            tarifa: tarifa,
             custo_atual: custoAtual,
             aviso_limite: limite
         });

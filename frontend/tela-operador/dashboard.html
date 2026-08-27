@@ -4,23 +4,26 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>GoodWe - Sistema Inteligente de Gerenciamento de Recarga</title>
-        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="./style/style-dashboard.css">
     </head>
 
     <body>
         <header>
             <div id="logo">GoodWe ChargeGrid Intelligence</div>
-            <div id="status-sistema">● Sistema Online</div>
+            <div id="status-sistema">
+                ● Sistema Online
+
+                <button class="btn-tema" onclick="alternarTema()" title="Alternar tema" id="btnTema">
+                    <svg id="iconeTema" viewBox="0 0 24 24">
+                    <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/>
+                    </svg>
+                </button>
+            </div>
         </header>
 
         <main>
             <section id="chargers">
-                <div id="chargers-grid">        
-                    <div id="slot-1" class="charger-card inativo"></div>
-                    <div id="slot-2" class="charger-card inativo"></div>
-                    <div id="slot-3" class="charger-card inativo"></div>
-                    <div id="slot-4" class="charger-card inativo"></div>
-                    <div id="slot-5" class="charger-card inativo"></div>
+                <div id="chargers-grid">
                 </div>
             </section>
 
@@ -46,10 +49,11 @@
                         </div>
 
                         <div class="form-input">
-                            <label for="tipo_carregador">Tipo de carregador:</label>
-                            <select name="tipo_carregador" id="input-tipo">
-                                <option value="1">Comum</option>
-                                <option value="2">Rápido</option>
+                            <label for="modo_carga">Modo de carregamento:</label>
+                            <select name="modo_carga" id="input-tipo">
+                                <option value="rapido">Rápido</option>
+                                <option value="FV">Prioridade Solar</option>
+                                <option value="FV_baterias">Solar + Bateria</option>
                             </select>
                         </div>
                         
@@ -80,7 +84,6 @@
             </div>
         </main>
         
-        <script src="script.js"></script>
-        <script src="app.js"></script>
+        <script src="./script/script-dashboard.js"></script>
     </body>
 </html>
