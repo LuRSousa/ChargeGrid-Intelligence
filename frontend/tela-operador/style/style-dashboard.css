@@ -92,6 +92,22 @@ header {
     color: var(--green-success);
 }
 
+.btn-atualizar {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--brand-red);
+    font-weight: bold;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-atualizar:hover {
+    background: var(--border-color);
+}
+
 /* Botão Tema Herdado do Mobile */
 .btn-tema {
     width: 38px;

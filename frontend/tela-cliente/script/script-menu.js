@@ -283,6 +283,26 @@ async function atualizarStatusSessao() {
       return;
     }
 
+    const status = dados.dados.sessao_status;
+
+    if (status === 'encerrada' || status === 'pagamento_pendente') {
+      const faturaResp = await fetch(`${API_BASE}/pagamento/buscar/sessao/${sessaoAtivaId}`);
+      const faturaDados = await faturaResp.json();
+
+      if (faturaDados.sucesso) {
+        mostrarTelaFatura(faturaDados.fatura);
+      } else {
+        mostrarMensagem('mensagemCarro', 'Sessão encerrada, mas a fatura não foi encontrada.', 'erro');
+      }
+      return;
+    }
+
+    if (status === 'paga') {
+      mostrarMensagem('mensagemCarro', 'Esta sessão já foi paga.', 'sucesso');
+      resetarParaTelaInicial();
+      return;
+    }
+
     const nomesModo = { rapido: 'Rápido', FV: 'Prioridade Solar', FV_baterias: 'Solar + Bateria' };
 
     document.getElementById('infoStatus').textContent = dados.dados.sessao_status;
