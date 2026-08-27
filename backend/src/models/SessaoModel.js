@@ -85,12 +85,14 @@ class SessaoModel{
     static async buscarTodasAtivas() {
         const [rows] = await db.query(
             `SELECT s.*, 
-                    c.potencia_maxima,
-                    c.potencia_atual AS carregador_potencia_atual
-             FROM Sessoes s
-             JOIN Carregadores c ON s.carregador_id = c.id
-             WHERE s.sessao_status = 'carregando'
-             ORDER BY s.inicio_recarga ASC`
+                    c.potencia_maxima, 
+                    c.potencia_atual AS carregador_potencia_atual,
+                    u.nome AS usuario_nome
+            FROM Sessoes s
+            JOIN Carregadores c ON s.carregador_id = c.id
+            LEFT JOIN Usuarios u ON s.usuario_id = u.id
+            WHERE s.sessao_status = 'carregando'
+            ORDER BY s.inicio_recarga ASC`
         );
         return rows;
     }

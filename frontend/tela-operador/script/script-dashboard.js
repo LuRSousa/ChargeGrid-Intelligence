@@ -54,7 +54,28 @@ async function fetchAPI(endpoint, method = 'GET', body = null) {
 // ==========================================
 // 3. ATUALIZAÇÃO DA INTERFACE
 // ==========================================
+async function verificarSaude() {
+  const statusEl = document.getElementById('statusTexto');
+  try {
+    const resp = await fetch('http://localhost:3000/health');
+    const dados = await resp.json();
+
+    if (dados.db === 'connected') {
+      statusEl.textContent = '● Sistema Online';
+      statusEl.style.color = 'var(--green-success)';
+    } else {
+      statusEl.textContent = '● Banco desconectado';
+      statusEl.style.color = 'var(--red-error)';
+    }
+  } catch (e) {
+    statusEl.textContent = '● Sistema Offline';
+    statusEl.style.color = 'var(--red-error)';
+  }
+}
+
 async function atualizarTodos() {
+    await verificarSaude();
+
     const demandaRes = await fetchAPI('/sessoes/calcular/demanda');
     const potMaxRes = await fetchAPI('/carregadores/potencia/maxima');
 
@@ -110,7 +131,8 @@ async function renderizarSlotsDinamicos(carregadores, sessoesAtivas) {
 
             card.className = 'charger-card ativo';
             card.innerHTML = `
-                <span class="charger-id">Carregador ${carregador.id}</span>
+                <span class="charger-id">Carregador - ${carregador.localizacao}</span>
+                <span class="charger-nome">Cliente: <p class="resultado">${sessao.usuario_nome || 'Não identificado'}</p></span>
                 <span class="charger-nome">Modo: <p class="resultado">${sessao.modo_carga || 'Padrão'}</p></span> 
                 <span class="charger-tipo">Status: <p class="resultado">${sessao.sessao_status}</p></span>
                 <span class="charger-kw">Potência: <p class="resultado">${Number(potenciaAtual || 0).toFixed(1)} kW</p></span>
@@ -124,7 +146,7 @@ async function renderizarSlotsDinamicos(carregadores, sessoesAtivas) {
             const emErro = carregador.status_modbus === 'erro';
 
             card.innerHTML = `
-                <span class="charger-id">Carregador ${carregador.id}</span>
+                <span class="charger-id">Carregador - ${carregador.localizacao}</span>
                 <div class="fim-slot">
                     <span class="charger-status" style="${emErro ? 'color: var(--red); opacity: 1;' : ''}">
                         ${emErro ? 'Erro/Offline' : 'Livre'}
@@ -140,6 +162,31 @@ async function renderizarSlotsDinamicos(carregadores, sessoesAtivas) {
 // ==========================================
 // 4. MODAL E CRIAÇÃO DE SESSÃO VIA API
 // ==========================================
+let usuarioSelecionadoId = null;
+
+async function buscarUsuarioPorNome() {
+    const nome = document.getElementById('input-nome').value.trim();
+    const resultadosEl = document.getElementById('resultados-usuario');
+
+    if (nome.length < 2) { resultadosEl.innerHTML = ''; return; }
+
+    const usuarios = await fetchAPI(`/usuario/buscar-nome?nome=${encodeURIComponent(nome)}`);
+    if (!usuarios || usuarios.length === 0) {
+        resultadosEl.innerHTML = '<p style="font-size:0.8rem; color:var(--text-muted);">Nenhum cliente encontrado</p>';
+        return;
+    }
+
+    resultadosEl.innerHTML = usuarios.map(u =>
+        `<div class="resultado-usuario" onclick="selecionarUsuario(${u.id}, '${u.nome}')">${u.nome}</div>`
+    ).join('');
+}
+
+function selecionarUsuario(id, nome) {
+    usuarioSelecionadoId = id;
+    document.getElementById('input-nome').value = nome;
+    document.getElementById('resultados-usuario').innerHTML = '';
+}
+
 let carregadorAtivoModal = null;
 
 function abrirModal(carregadorId) {
@@ -168,7 +215,8 @@ async function confirmarSessao() {
 
     const criacaoRes = await fetchAPI('/sessoes/criar', 'POST', {
         cartao_rfid_uid: cartaoUidMock,
-        carregador_id: carregadorAtivoModal
+        carregador_id: carregadorAtivoModal,
+        usuario_id: usuarioSelecionadoId || null
     });
 
     if (!criacaoRes || !criacaoRes.sucesso) {

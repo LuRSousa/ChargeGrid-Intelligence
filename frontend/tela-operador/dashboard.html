@@ -11,7 +11,13 @@
         <header>
             <div id="logo">GoodWe ChargeGrid Intelligence</div>
             <div id="status-sistema">
-                ● Sistema Online
+                <span id="statusTexto">
+                    ● Verificando...
+                </span>
+
+                <button class="btn-atualizar" onclick="atualizarTodos()" title="Atualizar dashboard">
+                    ↻ Atualizar
+                </button>
 
                 <button class="btn-tema" onclick="alternarTema()" title="Alternar tema" id="btnTema">
                     <svg id="iconeTema" viewBox="0 0 24 24">
@@ -55,18 +61,6 @@
                                 <option value="FV">Prioridade Solar</option>
                                 <option value="FV_baterias">Solar + Bateria</option>
                             </select>
-                        </div>
-                        
-                        <div id="horarios">
-                            <div class="form-input">
-                                <label for="inicio_sessao">Início</label>
-                                <input type="number" name="inicio_sessao" id="input-inicio" placeholder="HHMM (exp: 1234)">
-                            </div>
-
-                            <div class="form-input">
-                                <label for="fim_sessao">Fim</label>
-                                <input type="number" name="fim_sessao" id="input-fim" placeholder="HHMM (exp: 2056)">
-                            </div>
                         </div>
 
                         <div id="modal-erro"></div>
