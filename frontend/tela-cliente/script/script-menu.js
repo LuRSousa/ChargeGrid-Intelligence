@@ -96,6 +96,7 @@ function trocarAba(idAba, elementoBotao) {
 // -----------------------------------------------------------------------
 let sessaoAtivaId = null;
 let carregadorAtivoId = null;
+let tarifaAtual = 0;
 
 async function buscarSessaoAtiva() {
   const uid = document.getElementById('inputRfid').value.trim();
@@ -304,6 +305,7 @@ async function atualizarStatusSessao() {
     }
 
     const nomesModo = { rapido: 'Rápido', FV: 'Prioridade Solar', FV_baterias: 'Solar + Bateria' };
+    tarifaAtual = dados.tarifa ?? 0;
 
     document.getElementById('infoStatus').textContent = dados.dados.sessao_status;
     document.getElementById('infoModo').textContent = nomesModo[dados.dados.modo_carga] || dados.dados.modo_carga;
@@ -347,7 +349,7 @@ async function encerrarSessaoAtiva() {
         carregador_id: carregadorAtivoId,
         duracao_minutos: 0,
         energia_kwh: energia,
-        tarifa_aplicada: statusRes.tarifa ?? 0,
+        tarifa_aplicada: tarifaAtual,
         custo_total: custo
       })
     });
@@ -483,5 +485,4 @@ window.onload = function () {
   inicializarMapa();
   carregarPerfil();
   restaurarSessaoDoStorage();
-  resetarParaTelaInicial();
 };
