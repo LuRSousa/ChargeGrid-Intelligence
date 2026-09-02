@@ -1,6 +1,7 @@
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const db = require('./db');
 
 const sessoesRoutes = require('./routes/sessoes');
@@ -15,6 +16,14 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// Arquivos estáticos (PWA + dashboard)
+app.use(express.static(path.join(__dirname, '..', '..', 'frontend', 'tela-cliente')));
+app.use('/dashboard', express.static(path.join(__dirname, '..', '..', 'frontend', 'tela-operador')));
+
+app.get('/', (req, res) => res.redirect('/login.html'));
+app.get('/dashboard', (req, res) => res.redirect('/dashboard/dashboard.html'));
+
+// Rotas da API
 app.use('/api/sessoes', sessoesRoutes);
 app.use('/api/carregadores', carregadoresRoutes);
 app.use('/api/pagamento', pagamentoRoutes);

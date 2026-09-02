@@ -1,8 +1,5 @@
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = '/api';
 
-// -----------------------------------------------------------------------
-// Mensagens inline — mesmo padrão usado em menu.js
-// -----------------------------------------------------------------------
 function mostrarMensagem(elementId, texto, tipo) {
   const el = document.getElementById(elementId);
   if (!el) return;
@@ -17,9 +14,6 @@ function limparMensagem(elementId) {
   el.className = 'mensagem-inline';
 }
 
-// -----------------------------------------------------------------------
-// Navegação entre os três cartões (login / cadastro / recuperar senha)
-// -----------------------------------------------------------------------
 function mostrarRecuperar() {
   document.querySelector('.login-card').classList.add('escondido');
   document.getElementById('recoverCard').classList.add('ativo');
@@ -43,9 +37,6 @@ function mostrarLogin() {
   limparMensagem('mensagemRecuperar');
 }
 
-// -----------------------------------------------------------------------
-// Recuperação de senha — mock de UI, sem endpoint real no back-end ainda
-// -----------------------------------------------------------------------
 function enviarRecuperacao(event) {
   event.preventDefault();
   const email = document.getElementById('emailRecuperar').value;
@@ -61,9 +52,6 @@ function enviarRecuperacao(event) {
   return false;
 }
 
-// -----------------------------------------------------------------------
-// Login
-// -----------------------------------------------------------------------
 async function fazerLogin(event) {
   event.preventDefault();
   limparMensagem('mensagemLogin');
@@ -109,9 +97,6 @@ async function fazerLogin(event) {
   }
 }
 
-// -----------------------------------------------------------------------
-// Cadastro
-// -----------------------------------------------------------------------
 async function fazerCadastro(event) {
   event.preventDefault();
   limparMensagem('mensagemCadastro');

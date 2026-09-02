@@ -1,9 +1,6 @@
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = '/api';
 const TARIFA_POR_KWH = 2.50; // estimativa exibida no modal, antes de confirmar
 
-// -----------------------------------------------------------------------
-// Mensagens inline — substituem os alert() antigos
-// -----------------------------------------------------------------------
 function mostrarMensagem(elementId, texto, tipo) {
   const el = document.getElementById(elementId);
   if (!el) return;
@@ -18,9 +15,6 @@ function limparMensagem(elementId) {
   el.className = 'mensagem-inline';
 }
 
-// -----------------------------------------------------------------------
-// Mapa (simulação da visão de expansão — não conectado a dados reais)
-// -----------------------------------------------------------------------
 let map = null;
 
 function inicializarMapa() {
@@ -48,9 +42,6 @@ function inicializarMapa() {
   });
 }
 
-// -----------------------------------------------------------------------
-// Perfil
-// -----------------------------------------------------------------------
 async function carregarPerfil() {
   const usuarioId = localStorage.getItem('usuarioId');
   if (!usuarioId) {
@@ -76,9 +67,6 @@ function fazerLogout() {
   window.location.href = 'login.html';
 }
 
-// -----------------------------------------------------------------------
-// Navegação entre abas
-// -----------------------------------------------------------------------
 function trocarAba(idAba, elementoBotao) {
   document.querySelectorAll('.aba-conteudo').forEach(aba => aba.classList.remove('ativa'));
   document.querySelectorAll('.btn-menu').forEach(btn => btn.classList.remove('ativo'));
@@ -91,9 +79,6 @@ function trocarAba(idAba, elementoBotao) {
   }
 }
 
-// -----------------------------------------------------------------------
-// Identificação da sessão via cartão RFID
-// -----------------------------------------------------------------------
 let sessaoAtivaId = null;
 let carregadorAtivoId = null;
 let tarifaAtual = 0;
@@ -151,9 +136,6 @@ async function restaurarSessaoDoStorage() {
   mostrarPainelAcompanhamento();
 }
 
-// -----------------------------------------------------------------------
-// Modal — Personalizar Carregamento
-// -----------------------------------------------------------------------
 let modoSelecionado = 'rapido';
 
 function abrirModal() {
@@ -222,9 +204,6 @@ async function confirmarCarregamento() {
   }
 }
 
-// -----------------------------------------------------------------------
-// Modal — Iniciar Carregamento até a capacidade máxima
-// -----------------------------------------------------------------------
 function abrirModalMaxima() {
   limparMensagem('mensagemModalMaxima');
   document.getElementById('modalMaxima').classList.add('ativo');
@@ -261,9 +240,6 @@ async function confirmarCarregamentoMaximo() {
   }
 }
 
-// -----------------------------------------------------------------------
-// Painel de acompanhamento — atualização sob demanda (sem polling)
-// -----------------------------------------------------------------------
 function mostrarPainelAcompanhamento() {
   document.getElementById('blocoAcoesIniciais').style.display = 'none';
   document.getElementById('painelFatura').style.display = 'none';
@@ -326,9 +302,6 @@ async function atualizarStatusSessao() {
   }
 }
 
-// -----------------------------------------------------------------------
-// Encerramento e fatura
-// -----------------------------------------------------------------------
 let faturaAtualId = null;
 
 async function encerrarSessaoAtiva() {
@@ -442,9 +415,6 @@ function resetarParaTelaInicial() {
   localStorage.removeItem('carregadorAtivoId');
 }
 
-// -----------------------------------------------------------------------
-// Tema claro/escuro
-// -----------------------------------------------------------------------
 const iconeSol = '<path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/>';
 const iconeLua = '<path d="M12 7c0-1.77.72-3.37 1.88-4.53A9.994 9.994 0 0 0 2 12c0 5.52 4.48 10 10 10a9.994 9.994 0 0 0 9.53-6.88A7 7 0 0 1 12 7z"/><circle cx="6.5" cy="8.5" r="0.8"/><circle cx="9" cy="14" r="0.6"/><circle cx="15" cy="16" r="0.7"/>';
 
@@ -478,9 +448,6 @@ function alternarTema() {
   aplicarTema(temaSalvo);
 })();
 
-// -----------------------------------------------------------------------
-// Inicialização
-// -----------------------------------------------------------------------
 window.onload = function () {
   inicializarMapa();
   carregarPerfil();
