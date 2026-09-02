@@ -1,8 +1,5 @@
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = '/api';
 
-// ==========================================
-// 1. LOG OCPP
-// ==========================================
 function adicionarLog(mensagens) {
     const log = document.getElementById('ocpp-log');
     const agora = new Date();
@@ -32,9 +29,6 @@ function calcularSolarMock() {
     return Math.max(0, Math.round((1 - Math.abs(h - 13) / 7) * 100));
 }
 
-// ==========================================
-// 2. COMUNICAÇÃO COM O BACKEND (API)
-// ==========================================
 async function fetchAPI(endpoint, method = 'GET', body = null) {
     try {
         const options = {
@@ -51,9 +45,6 @@ async function fetchAPI(endpoint, method = 'GET', body = null) {
     }
 }
 
-// ==========================================
-// 3. ATUALIZAÇÃO DA INTERFACE
-// ==========================================
 async function verificarSaude() {
   const statusEl = document.getElementById('statusTexto');
   try {
@@ -159,9 +150,6 @@ async function renderizarSlotsDinamicos(carregadores, sessoesAtivas) {
     }
 }
 
-// ==========================================
-// 4. MODAL E CRIAÇÃO DE SESSÃO VIA API
-// ==========================================
 let usuarioSelecionadoId = null;
 
 async function buscarUsuarioPorNome() {
@@ -241,9 +229,6 @@ async function confirmarSessao() {
     atualizarTodos();
 }
 
-// ==========================================
-// 5. ENCERRAMENTO E RELATÓRIO VIA API
-// ==========================================
 async function encerrarSessaoBanco(sessaoId, carregadorId, rfidUid) {
     const statusRes = await fetchAPI(`/sessoes/status/${sessaoId}`);
     if (!statusRes || !statusRes.sucesso) {
@@ -294,18 +279,12 @@ function fecharRelatorio() {
     document.getElementById('modal-relatorio').classList.remove('aberto');
 }
 
-// ==========================================
-// 6. INICIALIZAÇÃO
-// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     adicionarLog([{ tipo: 'BootNotification', id_sessao: 0 }]);
 
     atualizarTodos();
 });
 
-// ==========================================
-// 7. TEMA CLARO / ESCURO (Herdado do Mobile)
-// ==========================================
 const iconeSol = '<path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/>';
 const iconeLua = '<path d="M12 7c0-1.77.72-3.37 1.88-4.53A9.994 9.994 0 0 0 2 12c0 5.52 4.48 10 10 10a9.994 9.994 0 0 0 9.53-6.88A7 7 0 0 1 12 7z"/><circle cx="6.5" cy="8.5" r="0.8"/><circle cx="9" cy="14" r="0.6"/><circle cx="15" cy="16" r="0.7"/>';
 
