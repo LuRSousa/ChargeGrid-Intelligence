@@ -223,13 +223,32 @@ router.patch("/encerrar/:id", async (req, res) => {
         const id = req.params.id;
         const { rfid_uid, carregador_id } = req.body;
 
-        const sessao = await SessaoModel.encerrar(id, req.body);
-
-        if (!sessao) {
+        const sessaoAtual = await SessaoModel.buscarPorId(id);
+        if (!sessaoAtual || !['iniciada', 'carregando'].includes(sessaoAtual.sessao_status)) {
             return res.status(404).json({
                 sucesso: false,
                 erro: "Sessão não encontrada ou já encerrada"
             });
+        }
+
+        const duracaoMinutos = calcularDuracaoMinutos(new Date(sessaoAtual.inicio_recarga));
+        const tempoHoras = calcularDuracaoHoras(new Date(sessaoAtual.inicio_recarga));
+        const energiaKwh = calcularEnergia(sessaoAtual.potencia_media, tempoHoras);
+
+        const demandaTotal = await CarregadorModel.getPotenciaTotalAtual();
+        const qntSessoes = (await SessaoModel.buscarTodasAtivas()).length;
+        const tarifa = calcularTarifa(sessaoAtual.modo_carga, new Date().getHours(), demandaTotal, qntSessoes, 0, 30, 0);
+        const custoTotal = Math.round(energiaKwh * tarifa * 100) / 100;
+
+        const sessao = await SessaoModel.encerrar(id, {
+            duracao_minutos: duracaoMinutos,
+            energia_kwh: energiaKwh,
+            tarifa_aplicada: tarifa,
+            custo_total: custoTotal
+        });
+
+        if (!sessao) {
+            return res.status(404).json({ sucesso: false, erro: "Sessão não encontrada ou já encerrada" });
         }
 
         if (rfid_uid) await RFIDModel.marcarComoDisponivel(rfid_uid);
@@ -238,7 +257,6 @@ router.patch("/encerrar/:id", async (req, res) => {
         const rebalanceamento = await aplicarRebalanceamento();
 
         let fatura = null;
-        let erroFatura = null;
         try {
             fatura = await FaturaModel.criar({
                 sessao_id: sessao.id,
@@ -247,17 +265,16 @@ router.patch("/encerrar/:id", async (req, res) => {
                 desconto_aplicado: 0
             });
         } catch (e) {
-            erroFatura = e.message;
-            console.error("Sessão encerrada, mas falha ao gerar fatura:", e);
+            console.error("Sessão encerrada, mas falha ao gerar fatura:", e.message);
         }
+
 
         res.status(200).json({
             sucesso: true,
             mensagem: "Sessão encerrada com sucesso",
             dados: sessao,
             rebalanceamento,
-            fatura,
-            aviso_fatura: erroFatura
+            fatura
         });
 
     } catch (error) {
