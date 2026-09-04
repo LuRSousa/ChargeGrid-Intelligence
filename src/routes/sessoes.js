@@ -7,6 +7,7 @@ const {
     rebalancearPotencias,
     calcularLimiteContratado,
     calcularPotenciaMedia,
+    calcularDuracaoMinutos,
     calcularDuracaoHoras,
     calcularEnergia,
     calcularTarifa,
