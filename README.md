@@ -45,7 +45,10 @@ O **ChargeGrid Intelligence** é uma plataforma de gestão de recarga de veícul
 - **PWA funcional** para o cliente (instalável, com service worker, tema claro/escuro, acompanhamento de sessão sob demanda)
 - **Dashboard funcional** para o operador (visão de todos os carregadores, métricas agregadas, encerramento manual de sessão)
 - **API REST completa**, cobrindo sessões, carregadores, cartões RFID, usuários e faturas
-- **Implantado publicamente** (ver [Ambiente Publicado](https://chargegrid-intelligence-production.up.railway.app/login.html))
+- **Implantado publicamente:**
+  
+  - (ver [Tela Cliente (PWA)](https://chargegrid-intelligence-production.up.railway.app/login.html))
+  - (ver [Tela Operador (Dashboard)](https://chargegrid-intelligence-production.up.railway.app/dashboard))
 
 ---
 
@@ -58,7 +61,7 @@ O **ChargeGrid Intelligence** é uma plataforma de gestão de recarga de veícul
 | Painel com todos os carregadores em tempo real | Login, cadastro e perfil |
 | Métricas agregadas (demanda, sessões ativas, capacidade usada) | Vínculo de sessão via cartão RFID |
 | Criação e encerramento manual de sessão | Personalização (limite de valor + modo de carregamento) |
-| Log estilo OCPP das transações | Acompanhamento sob demanda + fatura + pagamento |
+| Log estilo OCPP das transações (será substituído por Modbus) | Acompanhamento sob demanda + fatura + pagamento |
 | HTML5 · CSS3 · JavaScript (Vanilla) | HTML5 · CSS3 · JavaScript (Vanilla) · PWA instalável |
 
 ### Fluxo de Dados Principal
