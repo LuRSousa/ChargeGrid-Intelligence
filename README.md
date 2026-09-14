@@ -249,5 +249,6 @@ O que ainda está por vir, tratado como evolução consciente do projeto, não c
 | Enzo Caruso Peter | RM570908 |
 | Leonardo Figueredo dos Santos | RM573653 |
 | Leonardo Robert Maulicino | RM570329 |
+| Lucas Ramos de Sousa | RM573901 |
 | Matheus Pimenta Martini | RM569400 |
 | Pablo Renato dos Santos Sobral de Carvalho | RM569894 |
