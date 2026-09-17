@@ -15,6 +15,7 @@
 - [Estrutura do Projeto](#estrutura-do-projeto)
 - [Como Executar Localmente](#como-executar-localmente)
 - [Ambiente Publicado](#ambiente-publicado)
+- [Módulo Modbus TCP](#módulo-modbus-tcp)
 - [Roadmap](#roadmap)
 - [Divisão de Tarefas](#divisão-de-tarefas)
 - [Equipe](#equipe)
@@ -117,12 +118,18 @@ chargegrid-intelligence/
 │   │   ├── pagamento.js
 │   │   ├── rfids.js
 │   │   └── usuario.js
-│   └── models/
-│       ├── SessaoModel.js
-│       ├── CarregadorModel.js
-│       ├── UsuarioModel.js
-│       ├── RFIDModel.js
-│       └── FaturaModel.js
+│   ├── models/
+│   │   ├── SessaoModel.js
+│   │   ├── CarregadorModel.js
+│   │   ├── UsuarioModel.js
+│   │   ├── RFIDModel.js
+│   │   └── FaturaModel.js
+│   ├── config/
+│   │   └── modbusConfig.js      # Endereços de registrador, escalas e mapa de status
+│   │                             # (única fonte de hipóteses/decisões de interpretação)
+│   └── services/
+│       ├── modbusClient.js      # Cliente Modbus TCP — lê e traduz os registradores
+│       └── modbusSimulator.js   # Servidor Modbus TCP simulado (substitui o hardware)
 │
 ├── sql/
 │   └── schema.sql                   # Script do banco
@@ -136,12 +143,13 @@ chargegrid-intelligence/
 │   │   ├── style/
 │   │   ├── script/
 │   │   └── icons/
-│   │
 │   └── tela-operador/               # Dashboard (Interface 1)
 │       ├── dashboard.html
 │       ├── style/
 │       └── script/
-│
+├── scripts/
+|   ├── demo-modbus.js           # Demonstração do ciclo completo de uma recarga
+|   └── ler-carregador.js        # Leitura avulsa, útil contra hardware real
 ├── .env.example
 ├── package.json
 └── README.md
@@ -213,6 +221,57 @@ Ambas as interfaces são servidas pelo próprio Express — não precisam de um 
 ## Ambiente Publicado
 
 O backend está implantado no **Railway**, junto com o banco MySQL, permitindo que qualquer integrante da equipe — e o protótipo físico (ESP32) — testem contra o mesmo ambiente, sem depender de uma máquina local ligada.
+
+---
+
+## Módulo Modbus TCP
+
+Além da simulação por eventos que já roda em produção, o projeto tem um
+segundo módulo, independente, que implementa a comunicação Modbus TCP baseada 
+no mapa de registradores da linha HCA G2 — com base no mapa de registradores 
+disponibilizado para a linha HCA G2.
+
+Diferente de um simulador que responde por chamada de função, este sobe um
+**servidor Modbus TCP de verdade**: o cliente conversa com seguindo o mesmo 
+padrão de comunicação Modbus TCP utilizado para a comunicação com um equipamento 
+físico — socket TCP, cabeçalho MBAP, function code, frame de resposta. 
+A arquitetura foi preparada para que o cliente possa apontar para um equipamento 
+físico por meio das configurações de host, porta e parâmetros Modbus, sem 
+alterar a lógica de interpretação dos dados.
+
+### Registradores mapeados (fonte: mapa oficial GoodWe HCA G2)
+
+| Registrador | Campo | Tipo | Escala |
+|:---|:---|:---|:---|
+| 10015 | Potência de carregamento | U16 | ÷10 → kW |
+| 10016 | Energia da sessão atual | U16 | ÷10 → kWh |
+| 10017 | Status do carregador | U16 | 11 estados oficiais |
+| 10500–10506 | UID do cartão RFID | STR (14 bytes ASCII) | — |
+
+> Os endereços e escalas seguem o mapa utilizado pelo módulo;
+> parâmetros de função Modbus e offset permanecem configuráveis
+> conforme a documentação/equipamento utilizado.
+
+### Status: implementado e testado, rodando em paralelo
+
+Este módulo **não está conectado** às rotas da API nem ao banco de dados —
+por decisão consciente, para isolar o risco enquanto o fluxo principal
+(sessões, tarifação, pagamento) já está validado em produção. A integração
+com o protótipo físico (ESP32 simulando o carregador via Modbus TCP) é o
+próximo passo natural deste módulo.
+
+**Como testar isoladamente:**
+
+```bash
+# Terminal 1 — sobe o carregador simulado
+npm run simulator
+
+# Terminal 2 — lê os registradores dele
+npm run ler
+
+# Ou roda a demonstração completa do ciclo de vida de uma recarga
+npm run demo
+```
 
 ---
 
