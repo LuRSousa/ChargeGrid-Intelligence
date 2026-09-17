@@ -98,7 +98,7 @@ Todo o rebalanceamento e as atualizações de status acontecem **por evento** (i
 | **Pagamento** | Confirmação de status real via API própria | Gateway externo (Mercado Pago/PIX) ainda não integrado |
 | **Comunicação com o carregador** | Simulação orientada a eventos via API REST | Modbus TCP real é o protocolo confirmado da linha HCA G2; ainda depende de acesso ao hardware físico |
 | **Protótipo físico** | ESP32 + leitor NFC | Em desenvolvimento — simula o carregador comunicando via REST com o backend |
-| **IA** | Módulo de regras em JavaScript (tarifação dinâmica + rebalanceamento) | Implementado; Previsão preditiva de picos é roadmap |
+| **Lógica Inteligente** | Módulo de regras em JavaScript (tarifação dinâmica + rebalanceamento) | Implementado; Previsão preditiva de picos é roadmap |
 | **Hospedagem** | Railway (Backend + MySQL) | Ativo |
 
 ---
@@ -171,8 +171,8 @@ chargegrid-intelligence/
 **1. Clone o repositório**
 
 ```bash
-git clone https://github.com/LuRSousa/ChargeGridIntelligence-Sprint2.git
-cd ChargeGridIntelligence-Sprint2
+git clone https://github.com/LuRSousa/ChargeGrid-Intelligence.git
+cd ChargeGrid-Intelligence
 ```
 
 **2. Instale as dependências**
@@ -232,14 +232,14 @@ no mapa de registradores da linha HCA G2 — com base no mapa de registradores
 disponibilizado para a linha HCA G2.
 
 Diferente de um simulador que responde por chamada de função, este sobe um
-**servidor Modbus TCP de verdade**: o cliente conversa com seguindo o mesmo 
-padrão de comunicação Modbus TCP utilizado para a comunicação com um equipamento 
-físico — socket TCP, cabeçalho MBAP, function code, frame de resposta. 
+**servidor Modbus TCP de verdade**: o cliente se comunica seguindo o mesmo padrão 
+de comunicação Modbus TCP utilizado para a comunicação com um equipamento físico 
+— socket TCP, cabeçalho MBAP, function code, frame de resposta. 
 A arquitetura foi preparada para que o cliente possa apontar para um equipamento 
 físico por meio das configurações de host, porta e parâmetros Modbus, sem 
 alterar a lógica de interpretação dos dados.
 
-### Registradores mapeados (fonte: mapa oficial GoodWe HCA G2)
+### Registradores mapeados (baseado na documentação da GoodWe HCA G2)
 
 | Registrador | Campo | Tipo | Escala |
 |:---|:---|:---|:---|
