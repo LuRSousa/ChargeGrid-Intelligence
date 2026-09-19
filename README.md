@@ -55,6 +55,10 @@ O **ChargeGrid Intelligence** é uma plataforma de gestão de recarga de veícul
 
 ## Arquitetura do Sistema
 
+O esquema completo de integração dos componentes, fluxo de dados, mapa de registradores e conexão com os conteúdos da disciplina estão documentados no relatório técnico:
+
+📄 [relatorio.pdf](./docs/relatorio.pdf)
+
 ### Camada de Apresentação
 
 | Interface 1 — Dashboard do Operador | Interface 2 — PWA do Cliente |
@@ -150,6 +154,8 @@ chargegrid-intelligence/
 ├── scripts/
 |   ├── demo-modbus.js           # Demonstração do ciclo completo de uma recarga
 |   └── ler-carregador.js        # Leitura avulsa, útil contra hardware real
+├── docs/
+|   ├── relatorio.pdf
 ├── .env.example
 ├── package.json
 └── README.md
@@ -226,10 +232,9 @@ O backend está implantado no **Railway**, junto com o banco MySQL, permitindo q
 
 ## Módulo Modbus TCP
 
-Além da simulação por eventos que já roda em produção, o projeto tem um
-segundo módulo, independente, que implementa a comunicação Modbus TCP baseada 
-no mapa de registradores da linha HCA G2 — com base no mapa de registradores 
-disponibilizado para a linha HCA G2.
+Além da simulação por eventos que já roda em produção, o projeto tem 
+um módulo independente que implementa a comunicação Modbus TCP
+com base no mapa de registradores da linha HCA G2.
 
 Diferente de um simulador que responde por chamada de função, este sobe um
 **servidor Modbus TCP de verdade**: o cliente se comunica seguindo o mesmo padrão 
