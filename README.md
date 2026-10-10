@@ -55,9 +55,11 @@ O **ChargeGrid Intelligence** é uma plataforma de gestão de recarga de veícul
 
 ## Arquitetura do Sistema
 
-O esquema completo de integração dos componentes, fluxo de dados, mapa de registradores e conexão com os conteúdos da disciplina estão documentados no relatório técnico:
+O esquema completo de integração dos componentes, fluxo de dados, mapa de registradores e conexão com os conteúdos da disciplina estão documentados no relatório técnico e a avaliação e resultados no relatório da sprint 4:
 
-📄 [relatorio.pdf](./docs/relatorio.pdf)
+Sprint 3: [relatorio.pdf](./docs/relatorio.pdf)
+
+Sprint 4: [avaliacao_e_resultados.pdf](./docs/avaliacao_e_resultados.pdf)
 
 ### Camada de Apresentação
 
@@ -156,6 +158,7 @@ chargegrid-intelligence/
 |   └── ler-carregador.js        # Leitura avulsa, útil contra hardware real
 ├── docs/
 |   ├── relatorio.pdf
+|   └── avaliacao_e_resultados.js        
 ├── .env.example
 ├── package.json
 └── README.md
